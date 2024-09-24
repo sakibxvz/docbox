@@ -1,101 +1,188 @@
-import Image from "next/image";
+import { FileIcon, FolderIcon, MoreHorizontal, Search } from 'lucide-react';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Popover } from '@radix-ui/react-popover';
+import { PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import FileContextMenu from '@/components/file-context-menu';
+
+const allFiles = [
+	{
+		name: 'Dashboard tech requirements',
+		size: '220 KB',
+		type: 'docx',
+		uploadedBy: 'Amélie Laurent',
+		lastModified: 'Jan 4, 2024',
+	},
+	{
+		name: 'Marketing site requirements',
+		size: '300 KB',
+		type: 'docx',
+		uploadedBy: 'Ammar Polley',
+		lastModified: 'Jan 5, 2024',
+	},
+	{
+		name: 'Q4_2023 Reporting',
+		size: '2 MB',
+		type: 'ppt',
+		uploadedBy: 'Amélie Laurent',
+		lastModified: 'Jan 6, 2024',
+	},
+	{
+		name: 'Q3_2023 Reporting',
+		size: '1.8 MB',
+		type: 'ppt',
+		uploadedBy: 'Sienna Hewitt',
+		lastModified: 'Jan 6, 2024',
+	},
+	{
+		name: 'Q2_2023 Reporting',
+		size: '1.7 MB',
+		type: 'ppt',
+		uploadedBy: 'Olly Brownlee',
+		lastModified: 'Jan 6, 2024',
+	},
+	{
+		name: 'Q1_2023 Reporting',
+		size: '1.6 MB',
+		type: 'ppt',
+		uploadedBy: 'Marshall Lewis',
+		lastModified: 'Jan 6, 2024',
+	},
+	{
+		name: 'FY_2022-23 Financials',
+		size: '500 KB',
+		type: 'xls',
+		uploadedBy: 'Amélie Laurent',
+		lastModified: 'Jan 7, 2024',
+	},
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+	return (
+		<div>
+			<h1 className='text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4'>
+				Featured Files
+			</h1>
+			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+				{[
+					{ name: 'UI Design', date: '03 Mar', size: '87 MB' },
+					{ name: 'Proposal', date: '03 Mar', size: '93 MB' },
+					{ name: 'DashLite Resource', date: '03 Mar', size: '93 MB' },
+					{ name: '2019 Projects', date: '03 Mar', size: '93 MB' },
+				].map((folder) => (
+					<div
+						key={folder.name}
+						className='bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700'
+					>
+						<FolderIcon className='h-10 w-10 text-blue-500 mb-2' />
+						<h3 className='font-medium text-slate-900 dark:text-slate-100'>
+							{folder.name}
+						</h3>
+						<p className='text-sm text-slate-500 dark:text-slate-400'>
+							{folder.date} · {folder.size}
+						</p>
+					</div>
+				))}
+			</div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+			{/* Files Modified  */}
+
+			<div className='my-5 flex items-center justify-between'>
+				<h2 className='text-2xl font-bold'>All files</h2>
+				<div className='flex items-center gap-2'>
+					<div className='relative'>
+						<Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+						<Input placeholder='Search' className='pl-8' />
+					</div>
+					<Select>
+						<SelectTrigger className='w-[120px]'>
+							<SelectValue placeholder='Filters' />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value='all'>All Files</SelectItem>
+							<SelectItem value='recent'>Recent</SelectItem>
+							<SelectItem value='modified'>Modified</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
+
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead>File name</TableHead>
+						<TableHead>Uploaded by</TableHead>
+						<TableHead>Last modified</TableHead>
+						<TableHead></TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{allFiles.map((file) => (
+						<TableRow key={file.name}>
+							<TableCell>
+								<div className='flex items-center gap-2'>
+									<FileIcon className='h-4 w-4' />
+									<span>{file.name}</span>
+								</div>
+							</TableCell>
+							<TableCell>
+								<div className='flex items-center gap-2'>
+									<Avatar className='h-6 w-6'>
+										<AvatarImage
+											src={`https://i.pravatar.cc/150?u=${file.uploadedBy}`}
+										/>
+										<AvatarFallback>
+											{file.uploadedBy
+												.split(' ')
+												.map((n) => n[0])
+												.join('')}
+										</AvatarFallback>
+									</Avatar>
+									<span>{file.uploadedBy}</span>
+								</div>
+							</TableCell>
+							<TableCell>{file.lastModified}</TableCell>
+							<TableCell>
+								{/* File System Actions  */}
+
+								<FileContextMenu />
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+
+			<div className='mt-4 flex items-center justify-between'>
+				<div className='text-sm text-muted-foreground'>
+					Showing 1 to 7 of 7 results
+				</div>
+				<div className='flex items-center gap-2'>
+					<Button variant='outline' size='sm'>
+						Previous
+					</Button>
+					<Button variant='outline' size='sm'>
+						Next
+					</Button>
+				</div>
+			</div>
+
+			{/* <FileUploader /> */}
+		</div>
+	);
 }
