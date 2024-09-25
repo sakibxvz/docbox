@@ -1,14 +1,24 @@
+'use client';
 import Link from 'next/link';
 import {
 	CircleUser,
+	FileText,
+	Grip,
 	Home,
 	LineChart,
+	Mail,
+	Map,
 	Menu,
+	MessageSquare,
+	Newspaper,
 	Package,
 	Package2,
 	Search,
 	ShoppingCart,
+	Sparkles,
+	Store,
 	Users,
+	Video,
 } from 'lucide-react';
 import {
 	Select,
@@ -37,8 +47,22 @@ import {
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ModeToggle } from '@/components/ui/mode-toggle';
+import { useState } from 'react';
+const services = [
+	{ name: 'Search', icon: Search },
+	{ name: 'Business', icon: Store },
+	{ name: 'Maps', icon: Map },
+	{ name: 'Gemini', icon: Sparkles },
+	{ name: 'News', icon: Newspaper },
+	{ name: 'Gmail', icon: Mail },
+	{ name: 'Meet', icon: Video },
+	{ name: 'Chat', icon: MessageSquare },
+	{ name: 'Contacts', icon: Users },
+	{ name: 'Drive', icon: FileText },
+];
 
 const DashboardTopBar = () => {
+	const [isGripOpen, setIsGripOpen] = useState(false);
 	return (
 		<header className='flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6'>
 			<Sheet>
@@ -130,7 +154,7 @@ const DashboardTopBar = () => {
 							<Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
 							<Input
 								type='search'
-								placeholder='Search Certificate...'
+								placeholder='Search Documents...'
 								className='w-full appearance-none bg-background pl-8 focus-visible:ring-0 focus-visible:ring-offset-0'
 							/>
 						</div>
@@ -140,6 +164,35 @@ const DashboardTopBar = () => {
 
 			{/* Dark and Light Mode Toggle  */}
 			<ModeToggle />
+
+			{/* Grid View Toggle */}
+			{/* Grid View Toggle */}
+			<DropdownMenu open={isGripOpen} onOpenChange={setIsGripOpen}>
+				<DropdownMenuTrigger asChild>
+					<Button variant='outline' size='icon'>
+						<Grip className='h-[1.2rem] w-[1.2rem]' />
+						<span className='sr-only'>Toggle Google services menu</span>
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent className='w-[300px]'>
+					<div className='grid grid-cols-3 gap-4 p-4'>
+						{services.map((service) => {
+							const Icon = service.icon; // Store the icon as a component
+							return (
+								<DropdownMenuItem
+									key={service.name}
+									className='flex flex-col items-center justify-center p-2'
+								>
+									<Icon className='mb-2 h-6 w-6' />{' '}
+									<span className='text-xs'>{service.name}</span>
+								</DropdownMenuItem>
+							);
+						})}
+					</div>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			{/* User Dropdown Menu */}
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant='secondary' size='icon' className='rounded-full'>

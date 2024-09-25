@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '../ui/separator';
 import { Progress } from '../ui/progress';
 import { TreeView, TreeDataItem } from '@/components/ui/tree-view';
@@ -119,21 +118,21 @@ const DashboardSidebar = () => {
 				<div className='flex-row p-4'>
 					<nav className='grid items-start px-2 text-sm font-medium lg:px-4'>
 						<Link
-							href='/dashboard'
+							href='/'
 							className='flex bg-muted items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
 						>
 							<Home className='h-4 w-4' />
 							Dashboard
 						</Link>
 						<Link
-							href='/dashboard/nikhanama'
+							href='/folder'
 							className='flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
 						>
 							<Folder className='h-4 w-4' />
 							All Folders
 						</Link>
 						<Link
-							href='/dashboard/marriage-form '
+							href='#'
 							className='flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
 						>
 							<Users className='w-4 h-4' />
@@ -157,7 +156,7 @@ const DashboardSidebar = () => {
 				<Separator className='my-2' />
 				<h2 className='text-lg px-4 font-medium'>Folder Structure</h2>
 				<ScrollArea className='rounded-md flex-1'>
-					<TreeView className='' data={data} icon={Folder} />
+					<TreeView className='' data={data} />
 				</ScrollArea>
 
 				{/* Storage Section */}

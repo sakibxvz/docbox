@@ -1,4 +1,4 @@
-import { FileIcon, FolderIcon, MoreHorizontal, Search } from 'lucide-react';
+import { FileIcon, FolderIcon, Search } from 'lucide-react';
 import {
 	Table,
 	TableBody,
@@ -17,8 +17,6 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Popover } from '@radix-ui/react-popover';
-import { PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import FileContextMenu from '@/components/file-context-menu';
 
 const allFiles = [
