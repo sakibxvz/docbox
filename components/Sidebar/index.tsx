@@ -15,6 +15,8 @@ import { Separator } from '../ui/separator';
 import { Progress } from '../ui/progress';
 import { TreeView, TreeDataItem } from '@/components/ui/tree-view';
 import { ScrollArea } from '../ui/scroll-area';
+import { getChildrenFolders } from '@/services/api';
+import { useEffect } from 'react';
 
 const data: TreeDataItem[] = [
 	{
@@ -100,7 +102,39 @@ const data: TreeDataItem[] = [
 	// Add more folder structure data as needed
 ];
 
+
+const transformData = (folders: any[]): TreeDataItem[] => {
+	return folders.map((folder) => ({
+		id: folder.id.toString(),
+		name: folder.name,
+		// children will be fetched dynamically, start with an empty array
+		children: [],
+		onClick: () => {
+			console.log(`Folder ${folder.name} clicked`);
+			// Fetch children logic here (if needed)
+			// e.g., fetchChildren(folder.id)
+		},
+	}));
+};
+
+
+
 const DashboardSidebar = () => {
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const folderId = 1; // Replace with the desired folder ID
+			const result = await getChildrenFolders(folderId);
+			if (result.success) {
+				console.log('Fetched children folders data:', result.data);
+			} else {
+				console.error('Error fetching children folders data:', result.message);
+			}
+		};
+
+		fetchData();
+	}, []);
+
 	return (
 		<div className='hidden border-r bg-muted/40 md:block h-full'>
 			<div className='flex flex-col h-screen sticky top-0 max-h-screen'>

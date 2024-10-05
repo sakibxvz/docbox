@@ -1,5 +1,5 @@
 'use client';
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -10,24 +10,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { login } from '@/services/api'; // Import the login function
 import { useRouter } from 'next/navigation';
-
-interface LoginResponse {
-	success: boolean;
-	message: string;
-	data: {
-		type: string;
-		id: number;
-		name: string;
-		login: string;
-		email: string;
-		role: {
-			id: string;
-			name: string;
-		};
-	};
-}
+import { login } from '@/services/api';
 
 export default function Login() {
 	const [username, setUsername] = useState<string>('');
@@ -37,31 +21,29 @@ export default function Login() {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		setError(null); // Clear any previous errors
 
 		try {
-			// Call the login API with the form data
-			const response = await login({ user: username, pass: password });
-			const data: LoginResponse = response.data;
-			console.log(response);
+			const result = await login({ user: username, pass: password });
 
-			if (data.success) {
-				// On success, redirect to a protected page (e.g., dashboard)
-				router.push('/login');
-				// getFolder(1);
+			if ('id' in result) {
+				// If the result contains an `id`, it's a User object (successful login)
+				console.log('Login successful:', result);
+			
+				router.push('/login'); // Redirect after successful login
 			} else {
-				// On failure, set error message
-				setError('Login failed. Please check your credentials.');
+				// If result does not have an `id`, it's an ErrorResponse
+				setError(result.message); // Set error message from the ErrorResponse
 			}
 		} catch (error) {
-			setError('An error occurred during login. Please try again.');
+			console.error('Login error:', error);
+			setError('An unexpected error occurred.'); // Update error state
 		}
 	};
 
 	return (
 		<div className='flex items-center justify-center h-screen'>
 			<div>
-				<h2 className='text-center text-2xl p-5'>DocBox</h2>
+				<h2 className='text-center text-4xl p-5'>DocBox</h2>
 				<Card className='mx-auto max-w-sm'>
 					<CardHeader>
 						<CardTitle className='text-2xl'>Login</CardTitle>

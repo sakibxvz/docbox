@@ -48,6 +48,9 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import { useState } from 'react';
+import { logout } from '@/services/api'; // Import the logout function
+import { useRouter } from 'next/navigation';
+
 const services = [
 	{ name: 'Search', icon: Search },
 	{ name: 'Business', icon: Store },
@@ -63,6 +66,21 @@ const services = [
 
 const DashboardTopBar = () => {
 	const [isGripOpen, setIsGripOpen] = useState(false);
+	const router = useRouter();
+
+	const handleLogout = async () => {
+		try {
+			await logout(); // Call the logout function
+			// Remove the cookie from the browser
+			document.cookie =
+				'mydms_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; // Remove the cookie
+			console.log('Logout successful'); // Optionally log a message
+			router.push('/login'); // Redirect to login after logging out
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+	};
+
 	return (
 		<header className='flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6'>
 			<Sheet>
@@ -162,10 +180,9 @@ const DashboardTopBar = () => {
 				</form>
 			</div>
 
-			{/* Dark and Light Mode Toggle  */}
+			{/* Dark and Light Mode Toggle */}
 			<ModeToggle />
 
-			{/* Grid View Toggle */}
 			{/* Grid View Toggle */}
 			<DropdownMenu open={isGripOpen} onOpenChange={setIsGripOpen}>
 				<DropdownMenuTrigger asChild>
@@ -183,7 +200,7 @@ const DashboardTopBar = () => {
 									key={service.name}
 									className='flex flex-col items-center justify-center p-2'
 								>
-									<Icon className='mb-2 h-6 w-6' />{' '}
+									<Icon className='mb-2 h-6 w-6' />
 									<span className='text-xs'>{service.name}</span>
 								</DropdownMenuItem>
 							);
@@ -201,12 +218,19 @@ const DashboardTopBar = () => {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
-					<DropdownMenuLabel>My Account</DropdownMenuLabel>
+					<DropdownMenuLabel>
+						<Link
+							href='/account'
+							style={{ textDecoration: 'none', color: 'inherit' }}
+						>
+							My Account{' '}
+						</Link>
+					</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem>Settings</DropdownMenuItem>
 					<DropdownMenuItem>Support</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem>Logout</DropdownMenuItem>
+					<DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</header>
