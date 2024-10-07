@@ -1,14 +1,6 @@
 'use client';
 import Link from 'next/link';
-import {
-	Bell,
-	File,
-	Folder,
-	Home,
-	LineChart,
-	Package2,
-	Users,
-} from 'lucide-react';
+import { Bell, Folder, Home, LineChart, Package2, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '../ui/separator';
@@ -16,117 +8,63 @@ import { Progress } from '../ui/progress';
 import { TreeView, TreeDataItem } from '@/components/ui/tree-view';
 import { ScrollArea } from '../ui/scroll-area';
 import { getChildrenFolders } from '@/services/api';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const data: TreeDataItem[] = [
 	{
 		id: '1',
-		name: 'Documents',
+		name: 'Document Management System',
 		icon: Folder,
 		openIcon: Folder,
-		children: [
-			{
-				id: '2',
-				name: 'Resume.pdf',
-				icon: File,
-				selectedIcon: File,
-			},
-			{
-				id: '5',
-				name: 'SAkib',
-				icon: Folder,
-				selectedIcon: Folder,
-				children: [
-					{
-						id: '6',
-						name: 'Resume.pdf',
-						icon: File,
-						selectedIcon: File,
-					},
-					{
-						id: '7',
-						name: 'CoverLetter.docx',
-						icon: File,
-						selectedIcon: File,
-					},
-				],
-			},
-			{
-				id: '5',
-				name: 'SAkib',
-				icon: Folder,
-				selectedIcon: Folder,
-				children: [
-					{
-						id: '6',
-						name: 'Resume.pdf',
-						icon: File,
-						selectedIcon: File,
-					},
-					{
-						id: '7',
-						name: 'CoverLetter.docx',
-						icon: File,
-						selectedIcon: File,
-					},
-				],
-			},
-			{
-				id: '5',
-				name: 'SAkib',
-				icon: Folder,
-				selectedIcon: Folder,
-				children: [
-					{
-						id: '6',
-						name: 'Resume.pdf',
-						icon: File,
-						selectedIcon: File,
-					},
-					{
-						id: '7',
-						name: 'CoverLetter.docx',
-						icon: File,
-						selectedIcon: File,
-					},
-				],
-			},
-			{
-				id: '3',
-				name: 'CoverLetter.docx',
-				icon: File,
-				selectedIcon: File,
-			},
-		],
+		children: [],
 	},
-	// Add more folder structure data as needed
 ];
 
-
-const transformData = (folders: any[]): TreeDataItem[] => {
+const transformData = (
+	folders: TreeDataItem[],
+	setFolderData: React.Dispatch<React.SetStateAction<TreeDataItem[]>>
+): TreeDataItem[] => {
 	return folders.map((folder) => ({
 		id: folder.id.toString(),
 		name: folder.name,
-		// children will be fetched dynamically, start with an empty array
-		children: [],
-		onClick: () => {
-			console.log(`Folder ${folder.name} clicked`);
-			// Fetch children logic here (if needed)
-			// e.g., fetchChildren(folder.id)
+		children: folder.children || [], // Initialize children
+		onClick: async () => {
+			console.log(`Fetching children for Folder: ${folder.name}`);
+			const result = await getChildrenFolders(Number(folder.id)); // Fetch children when clicked
+			if (result.success && result.data) {
+				setFolderData((prevData) =>
+					prevData.map((item) =>
+						item.id === folder.id
+							? {
+									...item,
+									children: transformData(result.data.map(folder => ({ ...folder, id: folder.id.toString() })) || [], setFolderData),
+							  } // Update children for the clicked folder
+							: item
+					)
+				);
+			} else {
+				console.error('Error fetching children folders data:', result.message);
+			}
 		},
 	}));
 };
 
-
-
 const DashboardSidebar = () => {
+	const [folderData, setFolderData] = useState<TreeDataItem[]>(data);
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const folderId = 1; // Replace with the desired folder ID
+			const folderId = 1;
 			const result = await getChildrenFolders(folderId);
 			if (result.success) {
-				console.log('Fetched children folders data:', result.data);
+				setFolderData((prevData) =>
+					prevData.map((item) => ({
+						...item,
+						children: result.data
+							? transformData(result.data || [], setFolderData)
+							: [],
+					}))
+				);
 			} else {
 				console.error('Error fetching children folders data:', result.message);
 			}
@@ -186,14 +124,12 @@ const DashboardSidebar = () => {
 					</nav>
 				</div>
 
-				{/* File Tree */}
 				<Separator className='my-2' />
 				<h2 className='text-lg px-4 font-medium'>Folder Structure</h2>
 				<ScrollArea className='rounded-md flex-1'>
-					<TreeView className='' data={data} />
+					<TreeView className='' data={folderData} />
 				</ScrollArea>
 
-				{/* Storage Section */}
 				<Separator className='my-2' />
 				<div className='mb-4 px-4'>
 					<div className='text-sm font-medium py-3'>Storage</div>

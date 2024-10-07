@@ -71,8 +71,8 @@ export default function MyAccount() {
 									<div className='flex-shrink-0'>
 										<Avatar className='w-32 h-32'>
 											<AvatarImage
-												src='/placeholder.svg?height=128&width=128'
-												alt='User'
+												src={`http://45.248.150.185/docbox/out/out.UserImage.php?userid=${accountData?.id}`}
+												alt='User Image'
 											/>
 											<AvatarFallback>
 												{accountData?.name.charAt(0)}
