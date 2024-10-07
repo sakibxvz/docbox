@@ -1,24 +1,24 @@
 'use client';
 import Link from 'next/link';
 import { Bell, Folder, Home, LineChart, Package2, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '../ui/separator';
-import { Progress } from '../ui/progress';
+
 import { TreeView, TreeDataItem } from '@/components/ui/tree-view';
 import { ScrollArea } from '../ui/scroll-area';
 import { getChildrenFolders } from '@/services/api';
 import { useEffect, useState } from 'react';
+import { Separator } from '../ui/separator';
+import { Progress } from '../ui/progress';
 
 const DashboardSidebar = () => {
 	const [data, setData] = useState<TreeDataItem[]>([
 		{
 			id: '1',
-			name: 'Document Management System',
+			name: 'Libary',
 			icon: Folder,
 			openIcon: Folder,
 			children: [],
-			actions: <a href='/folder/1'></a>,
+			actions: <Link href='/folder/1'>View</Link>,
 		},
 	]);
 
@@ -32,7 +32,7 @@ const DashboardSidebar = () => {
 						icon: Folder,
 						openIcon: Folder,
 						children: [], // Initialize as empty for folders
-						actions: <a href={`/folder/${item.id}`}>View</a>, // Action for folders
+						actions: <Link href={`/folder/${item.id}`}>View</Link>, // Action for folders
 					};
 				} else if (item.type === 'document') {
 					return {
@@ -126,24 +126,6 @@ const DashboardSidebar = () => {
 						>
 							<Folder className='h-4 w-4' />
 							All Folders
-						</Link>
-						<Link
-							href='#'
-							className='flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
-						>
-							<Users className='w-4 h-4' />
-							Teams
-							<Badge className='ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full'>
-								6
-							</Badge>
-						</Link>
-
-						<Link
-							href='#'
-							className='flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
-						>
-							<LineChart className='h-4 w-4' />
-							Analytics
 						</Link>
 					</nav>
 				</div>

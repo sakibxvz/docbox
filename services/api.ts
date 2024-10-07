@@ -4,6 +4,8 @@ import {
 	FetchChildrenResponse,
 	FetchFolderResponse,
 	Folder,
+	FolderPath,
+	GetFolderPathResponse,
 	LoginResponse,
 	User,
 } from '@/types/type';
@@ -247,6 +249,56 @@ export const getFolderInfo = async (folderId: number): Promise<FetchFolderRespon
 				success: false,
 				message: 'An unexpected error occurred',
 				data: null,
+			};
+		}
+	}
+};
+
+// Function to get Folder path based on the folderId
+export const getFolderPath = async (
+	folderId: number
+): Promise<GetFolderPathResponse> => {
+	try {
+		const response = await axios.get(
+			`http://localhost:3000/docbox/folder/${folderId}/path`,
+			{
+				withCredentials: true,
+			}
+		);
+
+		console.log('Response:', response.data); // Log the response data
+
+		if (response.status === 200 && response.data.success) {
+			const folderPathData: FolderPath[] = response.data.data;
+			return {
+				success: true,
+				message: '',
+				data: folderPathData,
+			};
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to fetch folder path.',
+				data: [],
+			};
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const { data, status } = error.response;
+			console.error('Error response:', data, 'Status Code:', status); // Log status
+			return {
+				success: false,
+				message:
+					data.message || 'An error occurred while fetching folder path.',
+				data: [],
+			};
+		} else {
+			console.error('Unexpected error:', error);
+			return {
+				success: false,
+				message: 'An unexpected error occurred',
+				data: [],
 			};
 		}
 	}

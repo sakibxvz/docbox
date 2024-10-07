@@ -82,3 +82,14 @@ export interface Document {
 		value: string;
 	}>;
 }
+
+export interface FolderPath {
+	id: string;
+	name: string;
+}
+
+export interface GetFolderPathResponse {
+	success: boolean;
+	message: string;
+	data: FolderPath[];
+}
