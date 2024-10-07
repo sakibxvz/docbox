@@ -10,68 +10,152 @@ import { ScrollArea } from '../ui/scroll-area';
 import { getChildrenFolders } from '@/services/api';
 import { useEffect, useState } from 'react';
 
+
+
 const data: TreeDataItem[] = [
 	{
 		id: '1',
 		name: 'Document Management System',
 		icon: Folder,
 		openIcon: Folder,
+		children: [
+			{
+				id: '1-1',
+				name: 'Projects',
+				icon: Folder,
+				openIcon: Folder,
+				children: [
+					{
+						id: '1-1-1',
+						name: 'Project A',
+						icon: Folder,
+					},
+					{
+						id: '1-1-2',
+						name: 'Project B',
+						icon: Folder,
+						actions: (
+							<button>
+								<a href='/'>Click me</a>
+							</button>
+						),
+					},
+				],
+			},
+			{
+				id: '1-2',
+				name: 'Templates',
+				icon: Folder,
+				openIcon: Folder,
+				children: [
+					{
+						id: '1-2-1',
+						name: 'Invoice Template',
+						icon: File,
+						actions: (
+							<button>
+								<a href='/'>Click me</a>
+							</button>
+						),
+					},
+					{
+						id: '1-2-2',
+						name: 'Report Template',
+						icon: File,
+						actions: (
+							<button>
+								<a href='/'>Click me</a>
+							</button>
+						),
+					},
+				],
+			},
+		],
+	},
+	{
+		id: '2',
+		name: 'Shared Documents',
+		icon: Folder,
+		openIcon: Folder,
+		children: [
+			{
+				id: '2-1',
+				name: 'Team Meeting Notes',
+				icon: File,
+				actions: <button>View</button>,
+			},
+			{
+				id: '2-2',
+				name: 'Quarterly Report',
+				icon: File,
+				actions: <button>View</button>,
+			},
+		],
+	},
+	{
+		id: '3',
+		name: 'Archived',
+		icon: Folder,
+		openIcon: Folder,
 		children: [],
 	},
 ];
 
-const transformData = (
-	folders: TreeDataItem[],
-	setFolderData: React.Dispatch<React.SetStateAction<TreeDataItem[]>>
-): TreeDataItem[] => {
-	return folders.map((folder) => ({
-		id: folder.id.toString(),
-		name: folder.name,
-		children: folder.children || [], // Initialize children
-		onClick: async () => {
-			console.log(`Fetching children for Folder: ${folder.name}`);
-			const result = await getChildrenFolders(Number(folder.id)); // Fetch children when clicked
-			if (result.success && result.data) {
-				setFolderData((prevData) =>
-					prevData.map((item) =>
-						item.id === folder.id
-							? {
-									...item,
-									children: transformData(result.data.map(folder => ({ ...folder, id: folder.id.toString() })) || [], setFolderData),
-							  } // Update children for the clicked folder
-							: item
-					)
-				);
-			} else {
-				console.error('Error fetching children folders data:', result.message);
-			}
-		},
-	}));
-};
+
+// const transformData = (
+// 	folders: TreeDataItem[],
+// 	setFolderData: React.Dispatch<React.SetStateAction<TreeDataItem[]>>
+// ): TreeDataItem[] => {
+// 	return folders.map((folder) => ({
+// 		id: folder.id.toString(),
+// 		name: folder.name,
+// 		children: folder.children || [], // Initialize children
+// 		onClick: async () => {
+// 			console.log(`Fetching children for Folder: ${folder.name}`);
+// 			const result = await getChildrenFolders(Number(folder.id)); // Fetch children when clicked
+// 			console.log('Fetching children Folder Result:', result);
+			
+// 			if (result.success && result.data) {
+// 				setFolderData((prevData) =>
+// 					prevData.map((item) =>
+// 						item.id === folder.id
+// 							? {
+// 									...item,
+// 									children: transformData(result.data.map(folder => ({ ...folder, id: folder.id.toString() })) || [], setFolderData),
+// 							  } // Update children for the clicked folder
+// 							: item
+// 					)
+// 				);
+// 			} else {
+// 				console.error('Error fetching children folders data:', result.message);
+// 			}
+// 		},
+// 	}));
+// };
 
 const DashboardSidebar = () => {
 	const [folderData, setFolderData] = useState<TreeDataItem[]>(data);
 
-	useEffect(() => {
-		const fetchData = async () => {
-			const folderId = 1;
-			const result = await getChildrenFolders(folderId);
-			if (result.success) {
-				setFolderData((prevData) =>
-					prevData.map((item) => ({
-						...item,
-						children: result.data
-							? transformData(result.data || [], setFolderData)
-							: [],
-					}))
-				);
-			} else {
-				console.error('Error fetching children folders data:', result.message);
-			}
-		};
+	// useEffect(() => {
+	// 	const fetchData = async () => {
+	// 		const folderId = 1;
+	// 		const result = await getChildrenFolders(folderId);
+	// 		if (result.success) {
+	// 			setFolderData((prevData) =>
+	// 				prevData.map((item) => ({
+	// 					...item,
+	// 					children: result.data
+	// 						? transformData(result.data || [], setFolderData)
+	// 						: [],
+	// 				}))
+	// 			);
+	// 		} else {
+	// 			console.error('Error fetching children folders data:', result.message);
+	// 		}
+	// 	};
 
-		fetchData();
-	}, []);
+	// 	fetchData();
+	// }, []);
 
 	return (
 		<div className='hidden border-r bg-muted/40 md:block h-full'>
@@ -127,7 +211,8 @@ const DashboardSidebar = () => {
 				<Separator className='my-2' />
 				<h2 className='text-lg px-4 font-medium'>Folder Structure</h2>
 				<ScrollArea className='rounded-md flex-1'>
-					<TreeView className='' data={folderData} />
+					{/* <TreeView className='' data={folderData} /> */}
+					<TreeView className='' data={data} />
 				</ScrollArea>
 
 				<Separator className='my-2' />
