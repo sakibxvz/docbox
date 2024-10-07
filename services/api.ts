@@ -2,6 +2,7 @@ import {
 	ErrorResponse,
 	FetchAccountResponse,
 	FetchChildrenResponse,
+	FetchFolderResponse,
 	Folder,
 	LoginResponse,
 	User,
@@ -191,6 +192,53 @@ export const getChildrenFolders = async (
 				success: false,
 				message:
 					data.message || 'An error occurred while fetching children folders.',
+				data: null,
+			};
+		} else {
+			console.error('Unexpected error:', error);
+			return {
+				success: false,
+				message: 'An unexpected error occurred',
+				data: null,
+			};
+		}
+	}
+};
+
+// Function to get folder data based on folderId
+export const getFolderInfo = async (folderId: number): Promise<FetchFolderResponse> => {
+	try {
+		const response = await axios.get(
+			`http://localhost:3000/docbox/folder/${folderId}/children`,
+			{
+				withCredentials: true,
+			}
+		);
+
+		console.log('Response:', response.data); // Log the response data
+
+		if (response.status === 200) {
+			return {
+				success: true,
+				message: '',
+				data: response.data.data, // Return the data as is
+			};
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to fetch folder data.',
+				data: null,
+			};
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const { data, status } = error.response;
+			console.error('Error response:', data, 'Status Code:', status); // Log status
+			return {
+				success: false,
+				message:
+					data.message || 'An error occurred while fetching folder data.',
 				data: null,
 			};
 		} else {

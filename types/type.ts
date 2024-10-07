@@ -44,13 +44,41 @@ export interface FetchAccountResponse {
 export interface FetchChildrenResponse {
 	success: boolean;
 	message: string;
-	data: Folder[] | null;
+	data: (Folder | Document)[] | null; // Allow both Folder and Document in the array
+}
+
+export interface FetchFolderResponse {
+	success: boolean;
+	message: string;
+	data: (Folder | Document)[]; // Array of Folder or Document types
 }
 
 export interface Folder {
 	type: 'folder';
 	id: number;
 	name: string;
-	comment?: string;
+	comment?: string; // Comment is optional
 	date: string;
+}
+
+export interface Document {
+	type: 'document';
+	id: number;
+	name: string;
+	date: string;
+	comment?: string; // Make comment optional if it's not always present
+	keywords?: string; // Make keywords optional if it's not always present
+	ownerid: number;
+	islocked: boolean;
+	sequence: string;
+	expires?: string; // Make expires optional if it's not always present
+	mimetype: string;
+	version: number;
+	version_comment?: string; // Make version_comment optional if it's not always present
+	version_date: string;
+	size: number;
+	versionAttributes: Array<{
+		id: number;
+		value: string;
+	}>;
 }

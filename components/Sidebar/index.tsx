@@ -10,152 +10,92 @@ import { ScrollArea } from '../ui/scroll-area';
 import { getChildrenFolders } from '@/services/api';
 import { useEffect, useState } from 'react';
 
-
-
-const data: TreeDataItem[] = [
-	{
-		id: '1',
-		name: 'Document Management System',
-		icon: Folder,
-		openIcon: Folder,
-		children: [
-			{
-				id: '1-1',
-				name: 'Projects',
-				icon: Folder,
-				openIcon: Folder,
-				children: [
-					{
-						id: '1-1-1',
-						name: 'Project A',
-						icon: Folder,
-					},
-					{
-						id: '1-1-2',
-						name: 'Project B',
-						icon: Folder,
-						actions: (
-							<button>
-								<a href='/'>Click me</a>
-							</button>
-						),
-					},
-				],
-			},
-			{
-				id: '1-2',
-				name: 'Templates',
-				icon: Folder,
-				openIcon: Folder,
-				children: [
-					{
-						id: '1-2-1',
-						name: 'Invoice Template',
-						icon: File,
-						actions: (
-							<button>
-								<a href='/'>Click me</a>
-							</button>
-						),
-					},
-					{
-						id: '1-2-2',
-						name: 'Report Template',
-						icon: File,
-						actions: (
-							<button>
-								<a href='/'>Click me</a>
-							</button>
-						),
-					},
-				],
-			},
-		],
-	},
-	{
-		id: '2',
-		name: 'Shared Documents',
-		icon: Folder,
-		openIcon: Folder,
-		children: [
-			{
-				id: '2-1',
-				name: 'Team Meeting Notes',
-				icon: File,
-				actions: <button>View</button>,
-			},
-			{
-				id: '2-2',
-				name: 'Quarterly Report',
-				icon: File,
-				actions: <button>View</button>,
-			},
-		],
-	},
-	{
-		id: '3',
-		name: 'Archived',
-		icon: Folder,
-		openIcon: Folder,
-		children: [],
-	},
-];
-
-
-// const transformData = (
-// 	folders: TreeDataItem[],
-// 	setFolderData: React.Dispatch<React.SetStateAction<TreeDataItem[]>>
-// ): TreeDataItem[] => {
-// 	return folders.map((folder) => ({
-// 		id: folder.id.toString(),
-// 		name: folder.name,
-// 		children: folder.children || [], // Initialize children
-// 		onClick: async () => {
-// 			console.log(`Fetching children for Folder: ${folder.name}`);
-// 			const result = await getChildrenFolders(Number(folder.id)); // Fetch children when clicked
-// 			console.log('Fetching children Folder Result:', result);
-			
-// 			if (result.success && result.data) {
-// 				setFolderData((prevData) =>
-// 					prevData.map((item) =>
-// 						item.id === folder.id
-// 							? {
-// 									...item,
-// 									children: transformData(result.data.map(folder => ({ ...folder, id: folder.id.toString() })) || [], setFolderData),
-// 							  } // Update children for the clicked folder
-// 							: item
-// 					)
-// 				);
-// 			} else {
-// 				console.error('Error fetching children folders data:', result.message);
-// 			}
-// 		},
-// 	}));
-// };
-
 const DashboardSidebar = () => {
-	const [folderData, setFolderData] = useState<TreeDataItem[]>(data);
+	const [data, setData] = useState<TreeDataItem[]>([
+		{
+			id: '1',
+			name: 'Document Management System',
+			icon: Folder,
+			openIcon: Folder,
+			children: [],
+			actions: <a href='/folder/1'></a>,
+		},
+	]);
 
-	// useEffect(() => {
-	// 	const fetchData = async () => {
-	// 		const folderId = 1;
-	// 		const result = await getChildrenFolders(folderId);
-	// 		if (result.success) {
-	// 			setFolderData((prevData) =>
-	// 				prevData.map((item) => ({
-	// 					...item,
-	// 					children: result.data
-	// 						? transformData(result.data || [], setFolderData)
-	// 						: [],
-	// 				}))
-	// 			);
-	// 		} else {
-	// 			console.error('Error fetching children folders data:', result.message);
-	// 		}
-	// 	};
+	const transformData = (data: any[]): TreeDataItem[] => {
+		return data
+			.map((item) => {
+				if (item.type === 'folder') {
+					return {
+						id: item.id.toString(),
+						name: item.name,
+						icon: Folder,
+						openIcon: Folder,
+						children: [], // Initialize as empty for folders
+						actions: <a href={`/folder/${item.id}`}>View</a>, // Action for folders
+					};
+				} else if (item.type === 'document') {
+					return {
+						id: item.id.toString(),
+						name: item.name,
+						icon: File,
+						actions: <button>View</button>, // Adjust as needed
+					};
+				}
+				return null;
+			})
+			.filter(Boolean) as TreeDataItem[];
+	};
 
-	// 	fetchData();
-	// }, []);
+	const fetchChildren = async (folderId: number, parentId: string) => {
+		const response = await getChildrenFolders(folderId);
+
+		if (response.success && response.data) {
+			const transformedData = transformData(response.data);
+			setData((prevData) => {
+				// Use a helper function to add children recursively
+				return addChildrenToParent(prevData, parentId, transformedData);
+			});
+		} else {
+			console.error(response.message); // Handle error appropriately
+		}
+	};
+
+	const addChildrenToParent = (
+		currentData: TreeDataItem[],
+		parentId: string,
+		childrenToAdd: TreeDataItem[]
+	): TreeDataItem[] => {
+		return currentData.map((item) => {
+			if (item.id === parentId) {
+				// Only add children if not already present
+				if (item.children.length === 0) {
+					item.children = childrenToAdd; // Add new children
+				}
+			} else if (item.children) {
+				// Recursively search in children
+				item.children = addChildrenToParent(
+					item.children,
+					parentId,
+					childrenToAdd
+				);
+			}
+			return item;
+		});
+	};
+
+	// Fetch initial children on component mount
+	useEffect(() => {
+		fetchChildren(1, '1'); // Call with the root folder ID
+	}, []);
+
+	// Handle selection change to expand folders and load documents
+	const handleSelectChange = (item: TreeDataItem | undefined) => {
+		if (item && item.children && item.children.length === 0) {
+			// Fetch children only if there are no children already loaded
+			fetchChildren(parseInt(item.id), item.id);
+		}
+	};
 
 	return (
 		<div className='hidden border-r bg-muted/40 md:block h-full'>
@@ -211,8 +151,11 @@ const DashboardSidebar = () => {
 				<Separator className='my-2' />
 				<h2 className='text-lg px-4 font-medium'>Folder Structure</h2>
 				<ScrollArea className='rounded-md flex-1'>
-					{/* <TreeView className='' data={folderData} /> */}
-					<TreeView className='' data={data} />
+					<TreeView
+						className=''
+						data={data}
+						onSelectChange={handleSelectChange}
+					/>
 				</ScrollArea>
 
 				<Separator className='my-2' />
