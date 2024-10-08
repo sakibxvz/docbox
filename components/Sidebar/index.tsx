@@ -1,6 +1,14 @@
 'use client';
 import Link from 'next/link';
-import { Bell, Folder, Home, LineChart, Package2, Users } from 'lucide-react';
+import {
+	Bell,
+	Folder,
+	Home,
+	LineChart,
+	Package2,
+	Plus,
+	Users,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { TreeView, TreeDataItem } from '@/components/ui/tree-view';
@@ -9,6 +17,7 @@ import { getChildrenFolders } from '@/services/api';
 import { useEffect, useState } from 'react';
 import { Separator } from '../ui/separator';
 import { Progress } from '../ui/progress';
+import UploadButton from '../upload-button';
 
 const DashboardSidebar = () => {
 	const [data, setData] = useState<TreeDataItem[]>([
@@ -113,6 +122,8 @@ const DashboardSidebar = () => {
 
 				<div className='flex-row p-4'>
 					<nav className='grid items-start px-2 text-sm font-medium lg:px-4'>
+						<UploadButton buttonClassName='my-3' />
+
 						<Link
 							href='/'
 							className='flex bg-muted items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
@@ -120,6 +131,7 @@ const DashboardSidebar = () => {
 							<Home className='h-4 w-4' />
 							Dashboard
 						</Link>
+
 						<Link
 							href='/folder/1'
 							className='flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'

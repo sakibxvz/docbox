@@ -409,6 +409,38 @@ export const moveFile = async (
 	}
 };
 
+// Delete Folder
+export const deleteFolder = async (
+	folderId: number
+): Promise<{ success: boolean; message: string }> => {
+	try {
+		const response = await axios.delete(
+			`http://localhost:3000/docbox/folder/${folderId}`, // Update the endpoint for deleting a folder
+			{
+				withCredentials: true,
+			}
+		);
+
+		return {
+			success: response.data.success,
+			message: response.data.message,
+		};
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return {
+				success: false,
+				message: error.response.data.message || 'Failed to delete the folder.',
+			};
+		} else {
+			return {
+				success: false,
+				message: 'An unexpected error occurred while deleting the folder.',
+			};
+		}
+	}
+};
+
+
 // Delete a document
 export const deleteDocument = async (
 	documentId: number
@@ -480,6 +512,49 @@ export const uploadDocument = async (
 			return {
 				success: false,
 				message: 'An unexpected error occurred during upload.',
+			};
+		}
+	}
+};
+
+
+// Create a fodler
+export const createFolder = async (
+	parentFolderId: number,
+	folderName: string,
+	comment?: string,
+	sequence?: number,
+	attributes?: Record<string, any>
+): Promise<{ success: boolean; message: string; data?: any }> => {
+	try {
+		const response = await axios.post(
+			`http://localhost:3000/docbox/folder/${parentFolderId}/folder`,
+			{
+				name: folderName,
+				comment: comment || '',
+				sequence: sequence || undefined,
+				attributes: attributes || {},
+			},
+			{
+				withCredentials: true,
+			}
+		);
+
+		return {
+			success: response.data.success,
+			message: response.data.message,
+			data: response.data.data,
+		};
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return {
+				success: false,
+				message: error.response.data.message || 'Failed to create the folder.',
+			};
+		} else {
+			return {
+				success: false,
+				message: 'An unexpected error occurred while creating the folder.',
 			};
 		}
 	}

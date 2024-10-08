@@ -8,6 +8,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Folder, FileText, MoreVertical } from 'lucide-react';
+import ConfirmationDialog from '@/components/ConfirmationDialog';
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -15,7 +16,12 @@ import {
 	BreadcrumbList,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { deleteDocument, getFolderInfo, getFolderPath } from '@/services/api'; // getFolderPath API
+import {
+	deleteDocument,
+	deleteFolder,
+	getFolderInfo,
+	getFolderPath,
+} from '@/services/api'; // getFolderPath API
 import { useParams } from 'next/navigation';
 import {
 	FetchChildrenResponse,
@@ -46,20 +52,53 @@ export default function FolderPage() {
 		console.log('Move completed successfully');
 	};
 
+	// Handle Delete Document
 	const handleDeleteDocument = async (documentId: number) => {
 		const result = await deleteDocument(documentId);
 		if (result.success) {
 			toast({
-				title: 'Uh oh! Something went wrong.',
-				description: 'There was a problem with your request.',
-			}); // Show success toast
-			// Optionally, refresh the document list or update the state
+				title: 'Document Deleted',
+				description: 'The document has been deleted successfully.',
+				variant: 'destructive', // Adjust the variant if your toast library supports it
+				duration: 1000,
+			});
+
+			// Update the files state to remove the deleted document
+			setFiles((prevFiles) =>
+				prevFiles.filter((file) => file.id !== documentId)
+			);
 		} else {
 			toast({
-				variant: 'destructive',
-				title: 'Uh oh! Something went wrong.',
-				description: 'There was a problem with your request.',
-			}); // Show error toast
+				title: 'Error',
+				description: result.message,
+				variant: 'default', // Adjust the variant if your toast library supports it
+				duration: 1000,
+			});
+		}
+	};
+
+	// handle Delete Folder
+	const handleDeleteFolder = async (folderId: number) => {
+		const result = await deleteFolder(folderId);
+		if (result.success) {
+			toast({
+				title: 'Folder Deleted',
+				description: 'The folder has been deleted successfully.',
+				variant: 'destructive', // Adjust the variant if your toast library supports it
+				duration: 1000,
+			});
+
+			// Update the folders state to remove the deleted folder
+			setFolders((prevFolders) =>
+				prevFolders.filter((folder) => folder.id !== folderId)
+			);
+		} else {
+			toast({
+				title: 'Error',
+				description: result.message,
+				variant: 'default', // Adjust the variant if your toast library supports it
+				duration: 1000,
+			});
 		}
 	};
 
@@ -186,7 +225,11 @@ export default function FolderPage() {
 															}}
 															onMoveComplete={handleMoveComplete}
 														/>
-														<DropdownMenuItem>Delete</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() => handleDeleteFolder(folder.id)}
+														>
+															Delete
+														</DropdownMenuItem>
 													</DropdownMenuContent>
 												</DropdownMenu>
 											</CardHeader>
