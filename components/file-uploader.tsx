@@ -4,17 +4,42 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { UploadIcon } from 'lucide-react';
+import { uploadDocument } from '@/services/api'; // Adjust the import path as necessary
 
-export default function FileUploader() {
+interface FileUploaderProps {
+	folderId: number; // Pass the folder ID where the document will be uploaded
+}
+
+export default function FileUploader({ folderId }: FileUploaderProps) {
 	const [files, setFiles] = useState<File[]>([]);
+	const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+	const [uploadedData, setUploadedData] = useState<{
+		id: number;
+		name: string;
+	} | null>(null);
 
 	const onDrop = useCallback((acceptedFiles: File[]) => {
 		setFiles(acceptedFiles);
-		// Here you would typically handle the file upload to your server
 		console.log('Files to upload:', acceptedFiles);
 	}, []);
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+	const handleUpload = async () => {
+		if (files.length === 0) {
+			setUploadMessage('Please select a file to upload.');
+			return;
+		}
+
+		setUploadMessage(null); // Reset message
+		for (const file of files) {
+			const result = await uploadDocument(folderId, file);
+			setUploadMessage(result.message);
+			if (result.success) {
+				setUploadedData(result.data); // Store the uploaded document data
+			}
+		}
+	};
 
 	return (
 		<div className='w-full max-w-md mx-auto'>
@@ -44,9 +69,19 @@ export default function FileUploader() {
 							</li>
 						))}
 					</ul>
+					<Button className='mt-4' onClick={handleUpload}>
+						Upload Files
+					</Button>
 					<Button className='mt-4' onClick={() => setFiles([])}>
 						Clear Files
 					</Button>
+				</div>
+			)}
+			{uploadMessage && <p className='mt-2 text-sm'>{uploadMessage}</p>}
+			{uploadedData && (
+				<div className='mt-2'>
+					<p>Document ID: {uploadedData.id}</p>
+					<p>Document Name: {uploadedData.name}</p>
 				</div>
 			)}
 		</div>

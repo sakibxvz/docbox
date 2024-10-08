@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -15,7 +15,7 @@ import {
 	BreadcrumbList,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { getFolderInfo, getFolderPath } from '@/services/api'; // getFolderPath API
+import { deleteDocument, getFolderInfo, getFolderPath } from '@/services/api'; // getFolderPath API
 import { useParams } from 'next/navigation';
 import {
 	FetchChildrenResponse,
@@ -24,6 +24,9 @@ import {
 } from '@/types/type'; // Import types
 import { Spinner } from '@/components/ui/Spinner';
 import Link from 'next/link';
+import FileFolderMove from '@/components/file-move';
+import FileUploader from '@/components/file-uploader';
+import { useToast } from '@/hooks/use-toast';
 
 export default function FolderPage() {
 	const [folders, setFolders] = useState<FolderType[]>([]);
@@ -33,11 +36,35 @@ export default function FolderPage() {
 	const [breadcrumbPath, setBreadcrumbPath] = useState<
 		{ id: string; name: string }[]
 	>([]); // For breadcrumbs
+	const { toast } = useToast();
 
 	const params = useParams();
 	const { id } = params;
 
+	const handleMoveComplete = () => {
+		// Refresh your file/folder list or update state as needed
+		console.log('Move completed successfully');
+	};
+
+	const handleDeleteDocument = async (documentId: number) => {
+		const result = await deleteDocument(documentId);
+		if (result.success) {
+			toast({
+				title: 'Uh oh! Something went wrong.',
+				description: 'There was a problem with your request.',
+			}); // Show success toast
+			// Optionally, refresh the document list or update the state
+		} else {
+			toast({
+				variant: 'destructive',
+				title: 'Uh oh! Something went wrong.',
+				description: 'There was a problem with your request.',
+			}); // Show error toast
+		}
+	};
+
 	useEffect(() => {
+		console.log('Folder ID:', id);
 		// Fetch folder info and path data from the API
 		const fetchData = async () => {
 			try {
@@ -81,7 +108,6 @@ export default function FolderPage() {
 
 	return (
 		<div>
-			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -90,20 +116,36 @@ export default function FolderPage() {
 					<BreadcrumbSeparator />
 
 					{/* Dynamically generate breadcrumb items from the folder path */}
-					{breadcrumbPath.map((folder, index) => (
-						<>
+					{breadcrumbPath.map((folder, index) => {
+						const isLast = index === breadcrumbPath.length - 1;
+						return (
 							<BreadcrumbItem key={folder.id}>
-								<BreadcrumbLink
-									href={`/folder/${folder.id}`}
-									className='flex items-center justify-center'
-								>
-									<Folder className='mr-1 w-5 h-5' />
-									{folder.name}
-								</BreadcrumbLink>
+								{isLast ? (
+									// Last breadcrumb (active), apply bold style
+									<BreadcrumbLink
+										href={`/folder/${folder.id}`}
+										className='flex items-center justify-center'
+									>
+										<span className='flex font-normal text-foreground'>
+											{/* <Folder className='mr-1 w-5 h-5' /> */}
+											{folder.name}
+										</span>
+									</BreadcrumbLink>
+								) : (
+									<>
+										<BreadcrumbLink
+											href={`/folder/${folder.id}`}
+											className='flex items-center justify-center'
+										>
+											{/* <Folder className='mr-1 w-5 h-5' /> */}
+											{folder.name}
+										</BreadcrumbLink>
+										<BreadcrumbSeparator />
+									</>
+								)}
 							</BreadcrumbItem>
-							{index < breadcrumbPath.length - 1 && <BreadcrumbSeparator />}
-						</>
-					))}
+						);
+					})}
 				</BreadcrumbList>
 			</Breadcrumb>
 
@@ -137,6 +179,13 @@ export default function FolderPage() {
 															</Link>
 														</DropdownMenuItem>
 														<DropdownMenuItem>Rename</DropdownMenuItem>
+														<FileFolderMove
+															item={{
+																type: 'folder',
+																id: Number(folder.id),
+															}}
+															onMoveComplete={handleMoveComplete}
+														/>
 														<DropdownMenuItem>Delete</DropdownMenuItem>
 													</DropdownMenuContent>
 												</DropdownMenu>
@@ -160,7 +209,7 @@ export default function FolderPage() {
 								{files.map((file) => (
 									<Card key={file.name}>
 										<CardHeader className='flex flex-row items-center justify-between space-y-0'>
-											<CardTitle className='text-sm font-medium'>
+											<CardTitle className='text-sm font-medium truncate'>
 												<FileText className='w-5 h-5 inline-block mr-2' />
 												{file.name}
 											</CardTitle>
@@ -180,7 +229,18 @@ export default function FolderPage() {
 														Download
 													</DropdownMenuItem>
 													<DropdownMenuItem>Rename</DropdownMenuItem>
-													<DropdownMenuItem>Delete</DropdownMenuItem>
+													<FileFolderMove
+														item={{
+															type: 'document',
+															id: Number(file.id),
+														}}
+														onMoveComplete={handleMoveComplete}
+													/>
+													<DropdownMenuItem
+														onClick={() => handleDeleteDocument(file.id)}
+													>
+														Delete
+													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
 										</CardHeader>
@@ -192,6 +252,10 @@ export default function FolderPage() {
 						<p className='text-gray-500'>No files available.</p>
 					)}
 				</section>
+			</div>
+
+			<div>
+				<FileUploader folderId={Number(id)} />
 			</div>
 		</div>
 	);

@@ -7,6 +7,9 @@ import {
 	FolderPath,
 	GetFolderPathResponse,
 	LoginResponse,
+	MoveFileResponse,
+	MoveFolderResponse,
+	UploadResponse,
 	User,
 } from '@/types/type';
 import axios from 'axios';
@@ -208,7 +211,9 @@ export const getChildrenFolders = async (
 };
 
 // Function to get folder data based on folderId
-export const getFolderInfo = async (folderId: number): Promise<FetchFolderResponse> => {
+export const getFolderInfo = async (
+	folderId: number
+): Promise<FetchFolderResponse> => {
 	try {
 		const response = await axios.get(
 			`http://localhost:3000/docbox/folder/${folderId}/children`,
@@ -299,6 +304,182 @@ export const getFolderPath = async (
 				success: false,
 				message: 'An unexpected error occurred',
 				data: [],
+			};
+		}
+	}
+};
+
+// Move a Folder to a new destination
+export const moveFolder = async (
+	folderIdToMove: number,
+	destinationFolderId: number
+): Promise<MoveFolderResponse> => {
+	try {
+		const response = await axios.post(
+			`http://localhost:3000/docbox/folder/${folderIdToMove}/move/${destinationFolderId}`,
+			{}, // Since it's a POST request, passing an empty object as the body.
+			{
+				withCredentials: true,
+			}
+		);
+
+		console.log('Response:', response.data); // Log the response data
+
+		if (response.status === 200) {
+			return {
+				success: true,
+				message: response.data.message || '',
+				data: response.data.data,
+			};
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to move the folder.',
+				data: null,
+			};
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const { data, status } = error.response;
+			console.error('Error response:', data, 'Status Code:', status); // Log status
+			return {
+				success: false,
+				message: data.message || 'An error occurred while moving the folder.',
+				data: null,
+			};
+		} else {
+			console.error('Unexpected error:', error);
+			return {
+				success: false,
+				message: 'An unexpected error occurred.',
+				data: null,
+			};
+		}
+	}
+};
+
+// Move a File to a new destination
+export const moveFile = async (
+	fileId: number,
+	destinationFolderId: number
+): Promise<MoveFileResponse> => {
+	try {
+		const response = await axios.post(
+			`http://localhost:3000/docbox/document/${fileId}/move/${destinationFolderId}`,
+			{}, // Passing an empty object as the body for the POST request
+			{
+				withCredentials: true,
+			}
+		);
+
+		console.log('Response:', response.data); // Log the response data
+
+		if (response.status === 200) {
+			return {
+				success: true,
+				message: response.data.message || '',
+				data: response.data.data,
+			};
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to move the file.',
+				data: null,
+			};
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const { data, status } = error.response;
+			console.error('Error response:', data, 'Status Code:', status); // Log status
+			return {
+				success: false,
+				message: data.message || 'An error occurred while moving the file.',
+				data: null,
+			};
+		} else {
+			console.error('Unexpected error:', error);
+			return {
+				success: false,
+				message: 'An unexpected error occurred.',
+				data: null,
+			};
+		}
+	}
+};
+
+// Delete a document
+export const deleteDocument = async (
+	documentId: number
+): Promise<{ success: boolean; message: string }> => {
+	try {
+		const response = await axios.delete(
+			`http://localhost:3000/docbox/document/${documentId}`,
+			{
+				withCredentials: true,
+			}
+		);
+
+		return {
+			success: response.data.success,
+			message: response.data.message,
+		};
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return {
+				success: false,
+				message:
+					error.response.data.message || 'Failed to delete the document.',
+			};
+		} else {
+			return {
+				success: false,
+				message: 'An unexpected error occurred while deleting the document.',
+			};
+		}
+	}
+};
+
+// Upload a document to a folder
+export const uploadDocument = async (
+	folderId: number,
+	file: File
+): Promise<{
+	success: boolean;
+	message: string;
+	data?: { id: number; name: string };
+}> => {
+	const formData = new FormData();
+	formData.append('file', file, file.name); // Set the file name and extension
+
+	try {
+		const response = await axios.put(
+			`http://localhost:3000/docbox/folder/${folderId}/document`,
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+				withCredentials: true,
+			}
+		);
+
+		return {
+			success: response.data.success,
+			message: response.data.message,
+			data: response.data.data,
+		};
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return {
+				success: false,
+				message: error.response.data.message || 'Upload failed.',
+			};
+		} else {
+			return {
+				success: false,
+				message: 'An unexpected error occurred during upload.',
 			};
 		}
 	}

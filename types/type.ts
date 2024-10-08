@@ -93,3 +93,24 @@ export interface GetFolderPathResponse {
 	message: string;
 	data: FolderPath[];
 }
+
+export interface MoveFolderResponse {
+	success: boolean;
+	message: string;
+	data: unknown;
+}
+
+export interface MoveFileResponse {
+	success: boolean;
+	message: string;
+	data: unknown;
+}
+
+export interface UploadResponse {
+	success: boolean;
+	message: string;
+	data: {
+		id: number; // Adjust type if necessary based on your actual API response
+		name: string;
+	};
+}
