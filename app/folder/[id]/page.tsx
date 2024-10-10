@@ -8,7 +8,6 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Folder, FileText, MoreVertical } from 'lucide-react';
-import ConfirmationDialog from '@/components/ConfirmationDialog';
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -28,7 +27,7 @@ import {
 	Folder as FolderType,
 	Document as DocumentType,
 } from '@/types/type'; // Import types
-import { Spinner } from '@/components/ui/Spinner';
+import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
 import FileFolderMove from '@/components/file-move';
 import FileUploader from '@/components/file-uploader';
@@ -132,6 +131,7 @@ export default function FolderPage() {
 				} else {
 					setError('Failed to fetch folder path.');
 				}
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			} catch (err) {
 				setError('An error occurred while fetching data.');
 			} finally {

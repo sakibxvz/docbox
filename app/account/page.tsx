@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { account } from '@/services/api';
 import { FetchAccountResponse, User } from '@/types/type';
-import { Spinner } from '@/components/ui/Spinner';
+import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 
 export default function MyAccount() {
