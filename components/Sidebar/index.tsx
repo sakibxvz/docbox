@@ -120,7 +120,7 @@ const DashboardSidebar = () => {
 					</Button>
 				</div>
 
-				<div className='flex-row p-4'>
+				<div className='flex-row '>
 					<nav className='grid items-start px-2 text-sm font-medium lg:px-4'>
 						<UploadButton buttonClassName='my-3' />
 
@@ -132,28 +132,30 @@ const DashboardSidebar = () => {
 							Dashboard
 						</Link>
 
-						<Link
-							href='/folder/1'
-							className='flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary'
-						>
-							<Folder className='h-4 w-4' />
-							All Folders
-						</Link>
+						<span className='flex items-center py-2  rounded-lg  text-muted-foreground transition-all hover:text-primary'>
+							<ScrollArea className='rounded-md flex-1'>
+								<TreeView
+									className=''
+									data={data}
+									onSelectChange={handleSelectChange}
+								/>
+							</ScrollArea>
+						</span>
 					</nav>
 				</div>
 
-				<Separator className='my-2' />
-				<h2 className='text-lg px-4 font-medium'>Folder Structure</h2>
+				{/* <Separator className='my-2' />
 				<ScrollArea className='rounded-md flex-1'>
 					<TreeView
 						className=''
 						data={data}
 						onSelectChange={handleSelectChange}
 					/>
-				</ScrollArea>
+				</ScrollArea> */}
 
-				<Separator className='my-2' />
-				<div className='mb-4 px-4'>
+				{/* <Separator className='my-2 fixed' /> */}
+				{/* <div className='mb-4 px-4 fixed bottom-0 '>
+					<Separator className='my-2 fixed' />
 					<div className='text-sm font-medium py-3'>Storage</div>
 
 					<Progress value={33} />
@@ -164,7 +166,7 @@ const DashboardSidebar = () => {
 					<Button variant='outline' className='mt-2 h-auto p-2'>
 						Upgrade Storage
 					</Button>
-				</div>
+				</div> */}
 			</div>
 		</div>
 	);
