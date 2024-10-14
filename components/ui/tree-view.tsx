@@ -2,16 +2,19 @@
 
 import React from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Folder, File } from 'lucide-react';
 import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
+// Merged CSS: applied hover and selected styles from both snippets
 const treeVariants = cva(
-	'group hover:bg-gray-700 px-2 py-1 rounded-md transition-colors duration-200'
+	'group hover:bg-gray-700 px-2 py-0.5 rounded-sm transition-colors duration-200'
 );
 
 const selectedTreeVariants = cva('bg-blue-600 text-white');
 
+// Tree Component as before
 interface TreeDataItem {
 	id: string;
 	name: string;
@@ -91,12 +94,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeProps>(
 		}, [data, expandAll, initialSelectedItemId]);
 
 		return (
-			<div
-				className={cn(
-					'overflow-hidden relative text-gray-200 bg-gray-900 p-4 rounded-lg',
-					className
-				)}
-			>
+			<div className={cn('overflow-hidden relative p-2', className)}>
 				<TreeItem
 					data={data}
 					ref={ref}
@@ -199,27 +197,30 @@ const TreeNode = ({
 					className={cn(
 						treeVariants(),
 						selectedItemId === item.id && selectedTreeVariants(),
-						'w-full text-left'
+						'flex items-center cursor-pointer'
 					)}
 					onClick={() => {
 						handleSelectChange(item);
 						item.onClick?.();
 					}}
 				>
+					{/* Icon on the left */}
 					<TreeIcon
 						item={item}
 						isSelected={selectedItemId === item.id}
 						isOpen={value.includes(item.id)}
 						default={defaultNodeIcon}
 					/>
-					<span className='text-sm truncate'>{item.name}</span>
-					<TreeActions isSelected={selectedItemId === item.id}>
-						{item.actions}
-					</TreeActions>
+					{/* Link to the folder */}
+					<Link href={`/folder/${item.id}`}>
+						<p className='text-white hover:underline hover:cursor-pointer'>
+							{item.name?.trim() || 'Unnamed Folder'}
+						</p>
+					</Link>
 				</AccordionTrigger>
-				<AccordionContent className='ml-4 pl-1'>
+				<AccordionContent className='ml-4 pl-1 border-l'>
 					<TreeItem
-						data={item.children ? item.children : item}
+						data={item.children || item}
 						selectedItemId={selectedItemId}
 						handleSelectChange={handleSelectChange}
 						expandedItemIds={expandedItemIds}
@@ -256,7 +257,7 @@ const TreeLeaf = React.forwardRef<
 			<div
 				ref={ref}
 				className={cn(
-					'flex text-left items-center py-1 px-2 cursor-pointer rounded-md',
+					'ml-5 flex text-left items-center py-2 cursor-pointer',
 					treeVariants(),
 					className,
 					selectedItemId === item.id && selectedTreeVariants()
@@ -267,12 +268,17 @@ const TreeLeaf = React.forwardRef<
 				}}
 				{...props}
 			>
+				{/* Icon on the left */}
 				<TreeIcon
 					item={item}
 					isSelected={selectedItemId === item.id}
 					default={defaultLeafIcon}
 				/>
-				<span className='flex-grow text-sm truncate'>{item.name}</span>
+				{/* Link to the folder */}
+				<Link href={`/folder/${item.id}`}>
+					<p className='text-white'>{item.name?.trim() || 'Unnamed Folder'}</p>
+				</Link>
+				{/* Actions to the right (if any) */}
 				<TreeActions isSelected={selectedItemId === item.id}>
 					{item.actions}
 				</TreeActions>
@@ -280,6 +286,7 @@ const TreeLeaf = React.forwardRef<
 		);
 	}
 );
+
 TreeLeaf.displayName = 'TreeLeaf';
 
 const AccordionTrigger = React.forwardRef<
@@ -290,12 +297,12 @@ const AccordionTrigger = React.forwardRef<
 		<AccordionPrimitive.Trigger
 			ref={ref}
 			className={cn(
-				'flex flex-1 w-full items-center py-1 transition-all [&[data-state=open]>svg]:rotate-90',
+				'flex flex-1 w-full items-center py-2 transition-all first:[&[data-state=open]>svg]:rotate-90',
 				className
 			)}
 			{...props}
 		>
-			<ChevronRight className='h-4 w-4 shrink-0 transition-transform duration-200 text-gray-400 mr-1' />
+			<ChevronRight className='h-4 w-4 shrink-0 transition-transform duration-200 text-accent-foreground/50 mr-1' />
 			{children}
 		</AccordionPrimitive.Trigger>
 	</AccordionPrimitive.Header>
@@ -309,59 +316,41 @@ const AccordionContent = React.forwardRef<
 	<AccordionPrimitive.Content
 		ref={ref}
 		className={cn(
-			'overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down',
+			'transition-all overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up',
 			className
 		)}
 		{...props}
 	>
-		<div className='pb-1 pt-0'>{children}</div>
+		<div className='pb-2'>{children}</div>
 	</AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
-const TreeIcon = ({
-	item,
-	isOpen,
-	isSelected,
-	default: defaultIcon,
-}: {
-	item: TreeDataItem;
-	isOpen?: boolean;
-	isSelected?: boolean;
-	default?: any;
-}) => {
-	let Icon = defaultIcon;
-	if (isSelected && item.selectedIcon) {
-		Icon = item.selectedIcon;
-	} else if (isOpen && item.openIcon) {
-		Icon = item.openIcon;
-	} else if (item.icon) {
-		Icon = item.icon;
+const TreeIcon = ({ item, isSelected, isOpen, default: Default }: any) => {
+	const IconComponent = isSelected
+		? item.selectedIcon
+		: isOpen
+		? item.openIcon
+		: item.icon;
+
+	if (IconComponent) {
+		return <IconComponent className='w-4 h-4 text-accent mr-1.5' />;
+	} else if (Default) {
+		return <Default className='w-4 h-4 text-accent mr-1.5' />;
+	} else {
+		return <Folder className='w-4 h-4 text-accent mr-1.5' />;
 	}
-	return Icon ? (
-		<Icon className='h-4 w-4 shrink-0 mr-2 text-gray-400' />
-	) : (
-		<></>
-	);
 };
 
 const TreeActions = ({
 	children,
 	isSelected,
 }: {
-	children: React.ReactNode;
-	isSelected: boolean;
+	children?: React.ReactNode;
+	isSelected?: boolean;
 }) => {
-	return (
-		<div
-			className={cn(
-				isSelected ? 'block' : 'hidden',
-				'absolute right-3 group-hover:block'
-			)}
-		>
-			{children}
-		</div>
-	);
+	if (!children || !isSelected) return null;
+	return <div className='actions flex right-0'>{children}</div>;
 };
 
-export { TreeView, type TreeDataItem };
+export { TreeView };

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import {
 	Bell,
+	ExternalLink,
 	Folder,
 	Home,
 	LineChart,
@@ -23,7 +24,7 @@ const DashboardSidebar = () => {
 	const [data, setData] = useState<TreeDataItem[]>([
 		{
 			id: '1',
-			name: 'Libary',
+			name: 'DMS',
 			icon: Folder,
 			openIcon: Folder,
 			children: [],
@@ -41,7 +42,11 @@ const DashboardSidebar = () => {
 						icon: Folder,
 						openIcon: Folder,
 						children: [], // Initialize as empty for folders
-						actions: <Link href={`/folder/${item.id}`}>View</Link>, // Action for folders
+						actions: (
+							<Link href={`/folder/${item.id}`}>
+								<ExternalLink />
+							</Link>
+						), // Action for folders
 					};
 				} else if (item.type === 'document') {
 					return {
@@ -132,13 +137,17 @@ const DashboardSidebar = () => {
 							Dashboard
 						</Link>
 
-						<span className='flex items-center py-2  rounded-lg  text-muted-foreground transition-all hover:text-primary'>
-							<ScrollArea className='rounded-md flex-1'>
-								<TreeView
-									className=''
-									data={data}
-									onSelectChange={handleSelectChange}
-								/>
+						<span className='flex items-center py-2 rounded-lg text-muted-foreground transition-all hover:text-primary overflow-hidden'>
+							<ScrollArea className='rounded-md flex-1 h-screen max-h-[500px] w-48 border overflow-x-auto overflow-y-auto'>
+								<div className='min-w-full'>
+									{' '}
+									{/* Change this to min-w-full */}
+									<TreeView
+										className='whitespace-nowrap h-full'
+										data={data}
+										onSelectChange={handleSelectChange}
+									/>
+								</div>
 							</ScrollArea>
 						</span>
 					</nav>
