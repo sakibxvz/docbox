@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -13,11 +13,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import {
-	Sheet,
-	SheetContent,
-	SheetHeader,
-	SheetTitle,
-} from '@/components/ui/sheet';
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
 	Download,
 	Pencil,
@@ -27,35 +28,49 @@ import {
 	Info,
 	Trash,
 	EllipsisVertical,
-	MoreVertical,
-	Eye,
-	Edit2,
-	MessageSquare,
-	Share2,
-	Trash2,
 	FileText,
+	Edit2,
 } from 'lucide-react';
 
-export default function FileContextMenu() {
+interface FileContextMenuProps {
+	side: 'top' | 'right' | 'bottom' | 'left';
+}
+
+export default function FileContextMenu({ side }: FileContextMenuProps) {
 	const [isFileInfoOpen, setIsFileInfoOpen] = useState(false);
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	const handleFileInfoOpen = () => {
-		setIsFileInfoOpen(true);
+	const handleFileInfoToggle = () => {
+		setIsFileInfoOpen((prev) => !prev);
+		setIsDropdownOpen(false);
 	};
 
-	const handleFileInfoClose = () => {
-		setIsFileInfoOpen(false);
-	};
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setIsDropdownOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	return (
-		<>
-			<DropdownMenu>
+		<div ref={dropdownRef}>
+			<DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
 				<DropdownMenuTrigger asChild>
 					<Button variant='ghost' size='icon'>
 						<EllipsisVertical className='h-4 w-4' />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent className='w-56' side='left'>
+				<DropdownMenuContent className='w-56' side={side}>
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>
 							<FolderOpen className='mr-2 h-4 w-4' />
@@ -104,7 +119,7 @@ export default function FileContextMenu() {
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
 
-					<DropdownMenuItem onClick={handleFileInfoOpen}>
+					<DropdownMenuItem onSelect={handleFileInfoToggle}>
 						<Info className='mr-2 h-4 w-4' />
 						<span>File information</span>
 					</DropdownMenuItem>
@@ -119,56 +134,54 @@ export default function FileContextMenu() {
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			<Sheet open={isFileInfoOpen} onOpenChange={handleFileInfoClose}>
-				<SheetContent>
-					<SheetHeader>
-						<SheetTitle className='flex justify-between items-center text-foreground'>
-							File Details
-						</SheetTitle>
-					</SheetHeader>
-					<div className='mt-6 space-y-6'>
-						<div className='bg-muted p-6 rounded-lg flex items-center space-x-4'>
-							<div className='bg-background p-2 rounded'>
-								<FileText className='h-8 w-8 text-blue-500' />
-							</div>
-							<div>
-								<h3 className='font-semibold text-xl text-blue-500'>Editor</h3>
-								<p className='font-bold text-foreground'>accounts.txt</p>
-								<p className='text-sm text-muted-foreground'>
-									Modified 2026/02/15
-								</p>
-							</div>
-						</div>
-						<div>
-							<h3 className='font-semibold mb-4 text-foreground'>
-								File Overview
-							</h3>
-							<div className='space-y-4'>
-								{[
-									{ icon: Eye, label: 'Total Views', value: 198 },
-									{ icon: Edit2, label: 'Edits', value: 16 },
-									{ icon: MessageSquare, label: 'Comments', value: 11 },
-									{ icon: Share2, label: 'Share', value: 87 },
-									{ icon: Trash2, label: 'Deletes', value: 77 },
-								].map((item) => (
-									<div
-										key={item.label}
-										className='flex items-center justify-between'
-									>
-										<div className='flex items-center space-x-2'>
-											<item.icon className='h-4 w-4 text-muted-foreground' />
-											<span className='text-foreground'>{item.label}</span>
-										</div>
-										<span className='font-semibold text-foreground'>
-											{item.value}
-										</span>
+			<Dialog open={isFileInfoOpen} onOpenChange={setIsFileInfoOpen}>
+				<DialogContent className='sm:max-w-[400px] h-[400px] flex flex-col justify-start'>
+					{/* Dialog Header */}
+					<DialogHeader>
+						<DialogTitle>Document Preview</DialogTitle>
+					</DialogHeader>
+
+					{/* Tabs */}
+					<div className='flex flex-col h-full'>
+						{/* Fixed TabsList */}
+						<Tabs defaultValue='preview' className='w-full'>
+							<TabsList className='grid w-full grid-cols-3 h-10'>
+								<TabsTrigger value='preview'>Preview</TabsTrigger>
+								<TabsTrigger value='properties'>Properties</TabsTrigger>
+								<TabsTrigger value='comments'>Comments</TabsTrigger>
+							</TabsList>
+
+							{/* Scrollable Tab Content */}
+							<div className='flex-1 overflow-y-auto'>
+								<TabsContent value='preview'>
+									<div className='flex items-center justify-center h-64 bg-muted rounded-lg'>
+										<FileText className='h-16 w-16 text-muted-foreground' />
 									</div>
-								))}
+								</TabsContent>
+
+								<TabsContent value='properties'>
+									<div className='space-y-4'>
+										<div className='flex items-center space-x-2'>
+											<FileText className='h-4 w-4 text-muted-foreground' />
+											<span className='text-sm font-medium'>accounts.txt</span>
+										</div>
+										<div className='flex items-center space-x-2'>
+											<Edit2 className='h-4 w-4 text-muted-foreground' />
+											<span className='text-sm'>Modified 2026/02/15</span>
+										</div>
+									</div>
+								</TabsContent>
+
+								<TabsContent value='comments'>
+									<p className='text-sm text-muted-foreground'>
+										No comments yet.
+									</p>
+								</TabsContent>
 							</div>
-						</div>
+						</Tabs>
 					</div>
-				</SheetContent>
-			</Sheet>
-		</>
+				</DialogContent>
+			</Dialog>
+		</div>
 	);
 }

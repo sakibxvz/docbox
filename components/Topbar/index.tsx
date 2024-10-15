@@ -16,9 +16,9 @@ import {
 	Search,
 	ShoppingCart,
 	Sparkles,
-	Store,
 	Users,
 	Video,
+	LockKeyholeOpen,
 } from 'lucide-react';
 import {
 	Select,
@@ -52,17 +52,18 @@ import { logout } from '@/services/api'; // Import the logout function
 import { useRouter } from 'next/navigation';
 
 const services = [
-	{ name: 'Search', icon: Search },
-	{ name: 'Business', icon: Store },
-	{ name: 'Maps', icon: Map },
-	{ name: 'Gemini', icon: Sparkles },
-	{ name: 'News', icon: Newspaper },
-	{ name: 'Gmail', icon: Mail },
-	{ name: 'Meet', icon: Video },
-	{ name: 'Chat', icon: MessageSquare },
-	{ name: 'Contacts', icon: Users },
-	{ name: 'Drive', icon: FileText },
+	{ name: 'Search', icon: Search, link: '/' }, // added link
+	{ name: 'Control', icon: LockKeyholeOpen, link: '/access-control' },
+	{ name: 'Maps', icon: Map, link: '/' },
+	{ name: 'Gemini', icon: Sparkles, link: '/' },
+	{ name: 'News', icon: Newspaper, link: '/' },
+	{ name: 'Gmail', icon: Mail, link: '/' },
+	{ name: 'Meet', icon: Video, link: '/' },
+	{ name: 'Chat', icon: MessageSquare, link: '/' },
+	{ name: 'Contacts', icon: Users, link: '/' },
+	{ name: 'Drive', icon: FileText, link: '/' },
 ];
+
 
 const DashboardTopBar = () => {
 	const [isGripOpen, setIsGripOpen] = useState(false);
@@ -194,14 +195,20 @@ const DashboardTopBar = () => {
 				<DropdownMenuContent className='w-[300px]'>
 					<div className='grid grid-cols-3 gap-4 p-4'>
 						{services.map((service) => {
-							const Icon = service.icon; // Store the icon as a component
+							const Icon = service.icon;
 							return (
 								<DropdownMenuItem
 									key={service.name}
 									className='flex flex-col items-center justify-center p-2'
 								>
 									<Icon className='mb-2 h-6 w-6' />
-									<span className='text-xs'>{service.name}</span>
+									{service.link ? (
+										<Link href={service.link}>
+											<span className='text-xs'>{service.name}</span>
+										</Link>
+									) : (
+										<span className='text-xs'>{service.name}</span> // Fallback without link
+									)}
 								</DropdownMenuItem>
 							);
 						})}

@@ -9,10 +9,10 @@ import Link from 'next/link';
 
 // Merged CSS: applied hover and selected styles from both snippets
 const treeVariants = cva(
-	'group hover:bg-gray-700 px-2 py-0.5 rounded-sm transition-colors duration-200'
+	'group hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-0.5 rounded-sm transition-colors duration-200'
 );
 
-const selectedTreeVariants = cva('bg-blue-600 text-white');
+const selectedTreeVariants = cva('bg-blue-200 dark:bg-sky-700 text-white');
 
 // Tree Component as before
 interface TreeDataItem {
@@ -213,7 +213,7 @@ const TreeNode = ({
 					/>
 					{/* Link to the folder */}
 					<Link href={`/folder/${item.id}`}>
-						<p className='text-white hover:underline hover:cursor-pointer'>
+						<p className='text-gray-900 dark:text-white hover:underline hover:cursor-pointer'>
 							{item.name?.trim() || 'Unnamed Folder'}
 						</p>
 					</Link>
@@ -334,11 +334,13 @@ const TreeIcon = ({ item, isSelected, isOpen, default: Default }: any) => {
 		: item.icon;
 
 	if (IconComponent) {
-		return <IconComponent className='w-4 h-4 text-accent mr-1.5' />;
+		return (
+			<IconComponent className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5' />
+		);
 	} else if (Default) {
-		return <Default className='w-4 h-4 text-accent mr-1.5' />;
+		return <Default className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5' />;
 	} else {
-		return <Folder className='w-4 h-4 text-accent mr-1.5' />;
+		return <Folder className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5 '  />;
 	}
 };
 

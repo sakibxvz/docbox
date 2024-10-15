@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
 	DropdownMenu,
@@ -32,6 +32,7 @@ import Link from 'next/link';
 import FileFolderMove from '@/components/file-move';
 import FileUploader from '@/components/file-uploader';
 import { useToast } from '@/hooks/use-toast';
+import FileContextMenu from '@/components/file-context-menu';
 
 export default function FolderPage() {
 	const [folders, setFolders] = useState<FolderType[]>([]);
@@ -152,37 +153,32 @@ export default function FolderPage() {
 					<BreadcrumbItem>
 						<BreadcrumbLink href='/'>Home</BreadcrumbLink>
 					</BreadcrumbItem>
-					<BreadcrumbSeparator />
 
-					{/* Dynamically generate breadcrumb items from the folder path */}
 					{breadcrumbPath.map((folder, index) => {
 						const isLast = index === breadcrumbPath.length - 1;
 						return (
-							<BreadcrumbItem key={folder.id}>
-								{isLast ? (
-									// Last breadcrumb (active), apply bold style
-									<BreadcrumbLink
-										href={`/folder/${folder.id}`}
-										className='flex items-center justify-center'
-									>
-										<span className='flex font-normal text-foreground'>
-											{/* <Folder className='mr-1 w-5 h-5' /> */}
-											{folder.name}
-										</span>
-									</BreadcrumbLink>
-								) : (
-									<>
+							<React.Fragment key={folder.id}>
+								<BreadcrumbSeparator />
+								<BreadcrumbItem>
+									{isLast ? (
 										<BreadcrumbLink
 											href={`/folder/${folder.id}`}
 											className='flex items-center justify-center'
 										>
-											{/* <Folder className='mr-1 w-5 h-5' /> */}
+											<span className='flex font-normal text-foreground'>
+												{folder.name}
+											</span>
+										</BreadcrumbLink>
+									) : (
+										<BreadcrumbLink
+											href={`/folder/${folder.id}`}
+											className='flex items-center justify-center'
+										>
 											{folder.name}
 										</BreadcrumbLink>
-										<BreadcrumbSeparator />
-									</>
-								)}
-							</BreadcrumbItem>
+									)}
+								</BreadcrumbItem>
+							</React.Fragment>
 						);
 					})}
 				</BreadcrumbList>
@@ -196,14 +192,20 @@ export default function FolderPage() {
 							<h2 className='text-lg font-semibold mb-2'>Folders</h2>
 							<div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
 								{folders.map((folder) => (
-									<Link key={folder.id} href={`/folder/${folder.id}`} passHref>
-										<Card className='dark:bg-slate-800 dark:border-slate-700 cursor-pointer'>
-											<CardHeader className='flex flex-row items-center justify-between space-y-0'>
-												<CardTitle className='text-sm font-medium'>
+									<Card
+										key={folder.id}
+										className='dark:bg-slate-800 dark:border-slate-700 cursor-pointer'
+									>
+										<CardHeader className='flex flex-row items-center justify-between space-y-0'>
+											<Link href={`/folder/${folder.id}`} passHref>
+												<CardTitle className='text-sm font-medium cursor-pointer'>
 													<Folder className='w-5 h-5 inline-block text-blue-500 mr-2' />
 													{folder.name}
 												</CardTitle>
-												<DropdownMenu>
+											</Link>
+
+											<FileContextMenu side='right' />
+											{/* <DropdownMenu>
 													<DropdownMenuTrigger>
 														<MoreVertical className='w-4 h-4' />
 													</DropdownMenuTrigger>
@@ -231,10 +233,9 @@ export default function FolderPage() {
 															Delete
 														</DropdownMenuItem>
 													</DropdownMenuContent>
-												</DropdownMenu>
-											</CardHeader>
-										</Card>
-									</Link>
+												</DropdownMenu> */}
+										</CardHeader>
+									</Card>
 								))}
 							</div>
 						</>
