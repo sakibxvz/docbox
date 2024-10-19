@@ -255,13 +255,28 @@ export default function FolderPage() {
 										<CardHeader className='flex flex-row items-center justify-between space-y-0'>
 											<CardTitle className='text-sm font-medium truncate'>
 												<FileText className='w-5 h-5 inline-block mr-2' />
-												{file.name}
+												<Link
+													href={`/document/${file.id}`}
+													passHref
+													className='cursor-pointer'
+												>
+													{file.name}
+												</Link>
 											</CardTitle>
 											<DropdownMenu>
 												<DropdownMenuTrigger>
 													<MoreVertical className='h-4 w-4' />
 												</DropdownMenuTrigger>
 												<DropdownMenuContent>
+													<DropdownMenuItem>
+														<Link
+															href={`/document/${file.id}`}
+															passHref
+															className='cursor-pointer'
+														>
+															Open
+														</Link>
+													</DropdownMenuItem>
 													<DropdownMenuItem
 														onClick={() => {
 															window.open(

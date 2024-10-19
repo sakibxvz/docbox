@@ -11,6 +11,7 @@ import {
 	MoveFolderResponse,
 	UploadResponse,
 	User,
+	Document,
 } from '@/types/type';
 import axios, { AxiosProgressEvent } from 'axios';
 import Cookies from 'js-cookie';
@@ -108,7 +109,7 @@ export const account = async (): Promise<FetchAccountResponse> => {
 			withCredentials: true,
 		});
 
-		console.log('Response:', response.data); // Log the response data
+		console.log('Response:', response.data); // Log the response datadocument
 
 		if (response.status === 200) {
 			const accountData: User = response.data.data;
@@ -170,7 +171,6 @@ export const getChildrenFolders = async (
 			}
 		);
 
-		console.log('Response:', response.data); // Log the response data
 
 		if (response.status === 200) {
 			const childrenData: Folder[] = response.data.data.filter(
@@ -440,6 +440,85 @@ export const deleteFolder = async (
 	}
 };
 
+// Get a document info
+
+export const getDocumentInfo = async (
+	documentId: string
+): Promise<{ success: boolean; message: string; data: Document | null }> => {
+	try {
+		const response = await axios.get(
+			`http://localhost:3000/docbox/document/${documentId}`,
+			{
+				withCredentials: true,
+			}
+		);
+
+		if (response.status === 200) {
+			const documentData: Document = response.data.data;
+			return {
+				success: true,
+				message: '',
+				data: documentData,
+			};
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to fetch document details.',
+				data: null,
+			};
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const { data, status } = error.response;
+			console.error('Error response:', data, 'Status Code:', status); // Log status
+			return {
+				success: false,
+				message:
+					data.message || 'An error occurred while fetching document details.',
+				data: null,
+			};
+		} else {
+			console.error('Unexpected error:', error);
+			return {
+				success: false,
+				message: 'An unexpected error occurred',
+				data: null,
+			};
+		}
+	}
+};
+
+// Get a document content
+export const getDocumentContent = async (documentId: string) => {
+	try {
+		const response = await axios.get(
+			`http://localhost:3000/docbox/document/${documentId}/content`,
+			{
+				withCredentials: true,
+				responseType: 'blob',
+			}
+		);
+
+		if (response.status === 200) {
+			return response.data;
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to fetch document content.',
+				content: null,
+			};
+		}
+	} catch (error) {
+		console.error('Unexpected error:', error);
+		return {
+			success: false,
+			message: 'An unexpected error occurred',
+			content: null,
+		};
+	}
+};
 
 // Delete a document
 export const deleteDocument = async (
@@ -476,7 +555,7 @@ export const deleteDocument = async (
 // Upload a document to a folder
 /**
  * Function to upload a document with metadata.
- * 
+ *
  * @param folderId - The ID of the folder where the document will be uploaded
  * @param file - The file to upload
  * @param metadata - An object containing additional metadata for the document
@@ -484,80 +563,86 @@ export const deleteDocument = async (
  * @returns A promise with the response of the upload
  */
 export const uploadDocument = async (
-  folderId: number,
-  file: File,
-  metadata: {
-    docname?: string;
-    comment?: string;
-    keywords?: string;
-    sequence?: number;
-    expdate?: string;
-    version_comment?: string;
-    reqversion?: number;
-    origfilename?: string;
-    categories?: number[];
-    owner?: number; // ID of the owner if admin
-    attributes?: { [key: string]: string };
-  } = {},
-  onUploadProgress?: (progressEvent: AxiosProgressEvent) => void // AxiosProgressEvent type
+	folderId: number,
+	file: File,
+	metadata: {
+		docname?: string;
+		comment?: string;
+		keywords?: string;
+		sequence?: number;
+		expdate?: string;
+		version_comment?: string;
+		reqversion?: number;
+		origfilename?: string;
+		categories?: number[];
+		owner?: number; // ID of the owner if admin
+		attributes?: { [key: string]: string };
+	} = {},
+	onUploadProgress?: (progressEvent: AxiosProgressEvent) => void // AxiosProgressEvent type
 ): Promise<{
-  success: boolean;
-  message: string;
-  data?: { id: number; name: string };
+	success: boolean;
+	message: string;
+	data?: { id: number; name: string };
 }> => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file); // Attach the file
+	try {
+		const formData = new FormData();
+		formData.append('file', file); // Attach the file
 
-    // Append metadata if provided
-    if (metadata.docname) formData.append('name', metadata.docname);
-    if (metadata.comment) formData.append('comment', metadata.comment);
-    if (metadata.keywords) formData.append('keywords', metadata.keywords);
-    if (metadata.sequence) formData.append('sequence', metadata.sequence.toString());
-    if (metadata.expdate) formData.append('expdate', metadata.expdate); // Format: YYYY-MM-DD
-    if (metadata.version_comment) formData.append('version_comment', metadata.version_comment);
-    if (metadata.reqversion) formData.append('reqversion', metadata.reqversion.toString());
-    if (metadata.origfilename) formData.append('origfilename', metadata.origfilename);
-    if (metadata.categories && metadata.categories.length > 0) {
-      metadata.categories.forEach(cat => formData.append('categories[]', cat.toString()));
-    }
-    if (metadata.owner) formData.append('owner', metadata.owner.toString());
-    if (metadata.attributes) {
-      Object.entries(metadata.attributes).forEach(([attrdefid, attribute]) => {
-        formData.append(`attributes[${attrdefid}]`, attribute);
-      });
-    }
+		// Append metadata if provided
+		if (metadata.docname) formData.append('name', metadata.docname);
+		if (metadata.comment) formData.append('comment', metadata.comment);
+		if (metadata.keywords) formData.append('keywords', metadata.keywords);
+		if (metadata.sequence)
+			formData.append('sequence', metadata.sequence.toString());
+		if (metadata.expdate) formData.append('expdate', metadata.expdate); // Format: YYYY-MM-DD
+		if (metadata.version_comment)
+			formData.append('version_comment', metadata.version_comment);
+		if (metadata.reqversion)
+			formData.append('reqversion', metadata.reqversion.toString());
+		if (metadata.origfilename)
+			formData.append('origfilename', metadata.origfilename);
+		if (metadata.categories && metadata.categories.length > 0) {
+			metadata.categories.forEach((cat) =>
+				formData.append('categories[]', cat.toString())
+			);
+		}
+		if (metadata.owner) formData.append('owner', metadata.owner.toString());
+		if (metadata.attributes) {
+			Object.entries(metadata.attributes).forEach(([attrdefid, attribute]) => {
+				formData.append(`attributes[${attrdefid}]`, attribute);
+			});
+		}
 
-    const response = await axios.post(
-      `http://localhost:3000/docbox/folder/${folderId}/document`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        withCredentials: true,
-        onUploadProgress, // Use AxiosProgressEvent here
-      }
-    );
+		const response = await axios.post(
+			`http://localhost:3000/docbox/folder/${folderId}/document`,
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+				withCredentials: true,
+				onUploadProgress, // Use AxiosProgressEvent here
+			}
+		);
 
-    return {
-      success: response.data.success,
-      message: response.data.message,
-      data: response.data.data,
-    };
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      return {
-        success: false,
-        message: error.response.data.message || 'Upload failed.',
-      };
-    } else {
-      return {
-        success: false,
-        message: 'An unexpected error occurred during upload.',
-      };
-    }
-  }
+		return {
+			success: response.data.success,
+			message: response.data.message,
+			data: response.data.data,
+		};
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			return {
+				success: false,
+				message: error.response.data.message || 'Upload failed.',
+			};
+		} else {
+			return {
+				success: false,
+				message: 'An unexpected error occurred during upload.',
+			};
+		}
+	}
 };
 
 // Create a fodler
@@ -597,6 +682,56 @@ export const createFolder = async (
 			return {
 				success: false,
 				message: 'An unexpected error occurred while creating the folder.',
+			};
+		}
+	}
+};
+
+// Get User Info
+export const getUserInfo = async (
+	userId: number
+): Promise<{ success: boolean; message: string; data: User | null }> => {
+	try {
+		const response = await axios.get(
+			`http://localhost:3000/docbox/users/${userId}`,
+			{
+				withCredentials: true,
+			}
+		);
+
+		console.log('Response:', response.data); // Log the response data
+
+		if (response.status === 200) {
+			const userData: User = response.data.data;
+			return {
+				success: true,
+				message: '',
+				data: userData,
+			};
+		} else {
+			console.log('Unexpected response status:', response.status);
+			return {
+				success: false,
+				message: response.data.message || 'Failed to fetch user details.',
+				data: null,
+			};
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const { data, status } = error.response;
+			console.error('Error response:', data, 'Status Code:', status); // Log status
+			return {
+				success: false,
+				message:
+					data.message || 'An error occurred while fetching user details.',
+				data: null,
+			};
+		} else {
+			console.error('Unexpected error:', error);
+			return {
+				success: false,
+				message: 'An unexpected error occurred',
+				data: null,
 			};
 		}
 	}

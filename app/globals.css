@@ -77,13 +77,15 @@ body {
   }
 }
 
+/* Base styles for the custom scrollbar */
 .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--foreground) var(--background); /* Use CSS variables for compatibility */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--foreground) var(--background); /* Firefox */
 }
 
+/* WebKit browsers (Chrome, Safari) */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 12px;
+  width: 12px; /* Width of the scrollbar */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -104,21 +106,28 @@ body {
 
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
-  .custom-scrollbar-dark {
+  .custom-scrollbar {
     scrollbar-color: rgba(255, 255, 255, 0.4) rgba(255, 255, 255, 0.1); /* Light thumb for dark mode */
   }
 
-  .custom-scrollbar-dark::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2); /* Darker track for dark mode */
     backdrop-filter: blur(10px);
   }
 
-  .custom-scrollbar-dark::-webkit-scrollbar-thumb {
+  .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.4); /* Light thumb for dark mode */
     border: 3px solid rgba(0, 0, 0, 0.2); /* Dark glass border */
   }
 
-  .custom-scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.6); /* Lighter thumb on hover */
   }
 }
+
+/* Internet Explorer */
+.custom-scrollbar {
+  -ms-overflow-style: -ms-autohiding-scrollbar; /* IE 10+ */
+}
+
+
