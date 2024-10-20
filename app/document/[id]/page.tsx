@@ -149,6 +149,37 @@ export default function DocumentPage() {
 				{/* Sidebar */}
 				<div className='w-80 border-l overflow-auto'>
 					<Accordion type='single' collapsible className='w-full'>
+						<AccordionItem value='properties'>
+							<AccordionTrigger className='px-4'>Properties</AccordionTrigger>
+							<AccordionContent>
+								<div className='px-4 space-y-2 '>
+									<div className='flex'>
+										<Hash className='w-4 h-4 inline-block mr-2 items-center' />
+										<p className='w-fill text-xs items-center'>
+											Docuement ID: {documentInfo.id}
+										</p>
+									</div>
+									<div className='flex'>
+										<File className='w-4 h-4 inline-block mr-2 items-center' />
+										<p className='w-fill text-xs items-center'>
+											Name: {documentInfo.name}
+										</p>
+									</div>
+									<div className='flex'>
+										<Lock className='w-4 h-4 inline-block mr-2 items-center' />
+										<p className='w-fill text-xs items-center'>
+											Locked: {documentInfo.islocked ? 'Yes' : 'No'}
+										</p>
+									</div>
+									<div className='flex'>
+										<CloudDownload className='w-4 h-4 inline-block mr-2 items-center' />
+										<p className='w-fill text-xs items-center'>
+											File size: {byteSize(documentInfo.size).toString()}
+										</p>
+									</div>
+								</div>
+							</AccordionContent>
+						</AccordionItem>
 						<AccordionItem value='actions'>
 							<AccordionTrigger className='px-4'>Actions</AccordionTrigger>
 							<AccordionContent>
@@ -181,37 +212,7 @@ export default function DocumentPage() {
 								</div>
 							</AccordionContent>
 						</AccordionItem>
-						<AccordionItem value='properties'>
-							<AccordionTrigger className='px-4'>Properties</AccordionTrigger>
-							<AccordionContent>
-								<div className='px-4 space-y-2 '>
-									<div className='flex'>
-										<Hash className='w-4 h-4 inline-block mr-2 items-center' />
-										<p className='w-fill text-xs items-center'>
-											Docuement ID: {documentInfo.id}
-										</p>
-									</div>
-									<div className='flex'>
-										<File className='w-4 h-4 inline-block mr-2 items-center' />
-										<p className='w-fill text-xs items-center'>
-											Name: {documentInfo.name}
-										</p>
-									</div>
-									<div className='flex'>
-										<Lock className='w-4 h-4 inline-block mr-2 items-center' />
-										<p className='w-fill text-xs items-center'>
-											Locked: {documentInfo.islocked ? 'Yes' : 'No'}
-										</p>
-									</div>
-									<div className='flex'>
-										<CloudDownload className='w-4 h-4 inline-block mr-2 items-center' />
-										<p className='w-fill text-xs items-center'>
-											File size: {byteSize(documentInfo.size).toString()}
-										</p>
-									</div>
-								</div>
-							</AccordionContent>
-						</AccordionItem>
+
 						<AccordionItem value='version'>
 							<AccordionTrigger className='px-4'>Version</AccordionTrigger>
 							<AccordionContent>

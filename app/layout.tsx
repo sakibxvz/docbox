@@ -4,6 +4,9 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import DashboardWrapper from './dashboardWrapper';
 import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
 
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
@@ -21,7 +24,7 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	
+	const queryClient = new QueryClient();
 	return (
 		<html lang='en'>
 			<body
@@ -34,7 +37,10 @@ export default function RootLayout({
 						enableSystem
 						disableTransitionOnChange
 					>
-						<DashboardWrapper>{children}</DashboardWrapper>
+						<QueryClientProvider client={queryClient}>
+							<ReactQueryDevtools initialIsOpen={false} />
+							<DashboardWrapper>{children}</DashboardWrapper>
+						</QueryClientProvider>
 					</ThemeProvider>
 					<Toaster />
 				</main>

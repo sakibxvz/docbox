@@ -171,7 +171,6 @@ export const getChildrenFolders = async (
 			}
 		);
 
-
 		if (response.status === 200) {
 			const childrenData: Folder[] = response.data.data.filter(
 				(item: Folder) => item.type === 'folder'
@@ -501,6 +500,7 @@ export const getDocumentContent = async (documentId: string) => {
 		);
 
 		if (response.status === 200) {
+			console.log(response.data);
 			return response.data;
 		} else {
 			console.log('Unexpected response status:', response.status);

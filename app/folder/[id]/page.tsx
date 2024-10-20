@@ -263,7 +263,8 @@ export default function FolderPage() {
 													{file.name}
 												</Link>
 											</CardTitle>
-											<DropdownMenu>
+											<FileContextMenu side='right' />
+											{/* <DropdownMenu>
 												<DropdownMenuTrigger>
 													<MoreVertical className='h-4 w-4' />
 												</DropdownMenuTrigger>
@@ -301,7 +302,7 @@ export default function FolderPage() {
 														Delete
 													</DropdownMenuItem>
 												</DropdownMenuContent>
-											</DropdownMenu>
+											</DropdownMenu> */}
 										</CardHeader>
 									</Card>
 								))}

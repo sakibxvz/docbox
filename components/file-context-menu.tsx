@@ -30,6 +30,7 @@ import {
 	EllipsisVertical,
 	FileText,
 	Edit2,
+	FolderCog,
 } from 'lucide-react';
 
 interface FileContextMenuProps {
@@ -71,16 +72,15 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className='w-56' side={side}>
-					<DropdownMenuSub>
-						<DropdownMenuSubTrigger>
-							<FolderOpen className='mr-2 h-4 w-4' />
-							<span>Open with</span>
-						</DropdownMenuSubTrigger>
-						<DropdownMenuSubContent>
-							<DropdownMenuItem>Notepad</DropdownMenuItem>
-							<DropdownMenuItem>Visual Studio Code</DropdownMenuItem>
-						</DropdownMenuSubContent>
-					</DropdownMenuSub>
+					<DropdownMenuItem>
+						<FolderOpen className='mr-2 h-4 w-4' />
+						<span>Open </span>
+					</DropdownMenuItem>
+
+					<DropdownMenuItem>
+						<FolderCog className='mr-2 h-4 w-4' />
+						<span>Action </span>
+					</DropdownMenuItem>
 
 					<DropdownMenuItem>
 						<Download className='mr-2 h-4 w-4' />
@@ -89,12 +89,7 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 
 					<DropdownMenuItem>
 						<Pencil className='mr-2 h-4 w-4' />
-						<span>Rename</span>
-					</DropdownMenuItem>
-
-					<DropdownMenuItem>
-						<Copy className='mr-2 h-4 w-4' />
-						<span>Make a copy</span>
+						<span>Edit</span>
 					</DropdownMenuItem>
 
 					<DropdownMenuSub>
@@ -128,8 +123,7 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 
 					<DropdownMenuItem>
 						<Trash className='mr-2 h-4 w-4' />
-						<span>Move to trash</span>
-						<DropdownMenuShortcut>Delete</DropdownMenuShortcut>
+						<span>Delete</span>
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
