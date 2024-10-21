@@ -1,42 +1,36 @@
 'use client';
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
 	CardTitle,
+	CardDescription,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
 import { login } from '@/services/api';
 
 export default function Login() {
-	const [username, setUsername] = useState<string>('');
-	const [password, setPassword] = useState<string>('');
+	const [username, setUsername] = useState('');
+	const [password, setPassword] = useState('');
 	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-
 		try {
 			const result = await login({ user: username, pass: password });
-
 			if ('id' in result) {
-				// If the result contains an `id`, it's a User object (successful login)
-				console.log('Login successful:', result);
-			
-				router.push('/login'); // Redirect after successful login
+				// Redirect to the home page after a successful login
+				router.push('/');
 			} else {
-				// If result does not have an `id`, it's an ErrorResponse
-				setError(result.message); // Set error message from the ErrorResponse
+				setError(result.message);
 			}
 		} catch (error) {
-			console.error('Login error:', error);
-			setError('An unexpected error occurred.'); // Update error state
+			setError('An unexpected error occurred.');
 		}
 	};
 
@@ -48,7 +42,7 @@ export default function Login() {
 					<CardHeader>
 						<CardTitle className='text-2xl'>Login</CardTitle>
 						<CardDescription>
-							Enter your User Name below to login to your account
+							Enter your credentials below to login to your account
 						</CardDescription>
 					</CardHeader>
 					<CardContent>

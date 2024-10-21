@@ -48,7 +48,6 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import { useState } from 'react';
-import { logout } from '@/services/api'; // Import the logout function
 import { useRouter } from 'next/navigation';
 
 const services = [
@@ -64,21 +63,24 @@ const services = [
 	{ name: 'Drive', icon: FileText, link: '/' },
 ];
 
-
 const DashboardTopBar = () => {
 	const [isGripOpen, setIsGripOpen] = useState(false);
 	const router = useRouter();
 
 	const handleLogout = async () => {
 		try {
-			await logout(); // Call the logout function
-			// Remove the cookie from the browser
-			document.cookie =
-				'mydms_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; // Remove the cookie
-			console.log('Logout successful'); // Optionally log a message
-			router.push('/login'); // Redirect to login after logging out
+			// Call the API route to clear the cookie
+			const response = await fetch('/api/logout', { method: 'GET' });
+
+			// Check if the response was successful
+			if (!response.ok) {
+				throw new Error('Logout failed');
+			}
+
+			// Redirect to the login page
+			router.push('/login');
 		} catch (error) {
-			console.error('Logout failed:', error);
+			console.error('Error during logout:', error);
 		}
 	};
 

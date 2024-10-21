@@ -1,5 +1,6 @@
 import DashboardSidebar from '@/components/Sidebar';
 import DashboardTopBar from '@/components/Topbar';
+import LogoutButton from '@/components/Topbar/(component)/logout';
 
 const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
 	return (

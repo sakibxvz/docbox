@@ -26,7 +26,6 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
 	config.headers['Authorization'] = `Bearer 36e0b5372031b88a79047e34409a8612`;
-	console.log('Request Headers:', config.headers); // Log headers
 	return config;
 });
 
@@ -150,9 +149,20 @@ export const account = async (): Promise<FetchAccountResponse> => {
 // API route handler
 export const logout = async () => {
 	try {
-		await apiClient.get('/logout', {
-			withCredentials: true, // Include this line to send cookies
-		}); // Call the logout endpoint
+		const response = await apiClient.get(
+			'http://localhost:3000/docbox/logout',
+			{
+				withCredentials: true, // Include this line to send cookies
+			}
+		);
+
+		if (response.status === 200) {
+			console.log('Logout Succeffully');
+			return response.data;
+		} else {
+			console.log('Unexpected response status:', response.status);
+			console.log('Logout Failed');
+		}
 	} catch (error) {
 		console.error('Logout error:', error);
 		throw error; // Rethrow error to handle it where you call this function
