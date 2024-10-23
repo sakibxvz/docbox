@@ -9,12 +9,10 @@ import {
 	LoginResponse,
 	MoveFileResponse,
 	MoveFolderResponse,
-	UploadResponse,
 	User,
 	Document,
 } from '@/types/type';
 import axios, { AxiosProgressEvent } from 'axios';
-import Cookies from 'js-cookie';
 
 const apiClient = axios.create({
 	baseURL: '/docbox', // Proxy path
@@ -49,29 +47,6 @@ export const login = async (
 		// Check if the response status is successful and contains user data
 		if (response.status === 200 && response.data.data?.id) {
 			const user: User = response.data.data;
-
-			// Extract the 'set-cookie' header from the response
-			const cookies = response.headers['set-cookie'];
-
-			// Log cookies for debugging
-			console.log('Cookies from response:', cookies);
-
-			if (cookies) {
-				// Assuming cookies is an array, pick the first cookie (which should be the session cookie)
-				const cookieValue = Array.isArray(cookies) ? cookies[0] : cookies;
-
-				// Store the cookie with the correct value
-				Cookies.set('mydms_session', cookieValue, {
-					path: '/', // Cookie is valid throughout the site
-					sameSite: 'None', // Allow cookies for cross-origin requests
-					secure: true, // Set to true if your site runs over HTTPS
-					expires: 7, // 7-day expiration for the cookie
-				});
-
-				// Log the cookie value immediately after setting it
-				console.log('Stored Cookie Value:', Cookies.get('mydms_session'));
-			}
-
 			return user;
 		} else {
 			// Handle invalid login response
@@ -82,22 +57,11 @@ export const login = async (
 			} as ErrorResponse;
 		}
 	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			const { data } = error.response;
-
-			// Handle error response from the server
-			return {
-				success: false,
-				message: data.message || 'Login failed',
-				data: '',
-			} as ErrorResponse;
-		} else {
-			return {
-				success: false,
-				message: 'An unexpected error occurred',
-				data: '',
-			} as ErrorResponse;
-		}
+		return {
+			success: false,
+			message: 'An unexpected error occurred',
+			data: '',
+		} as ErrorResponse;
 	}
 };
 
@@ -126,23 +90,12 @@ export const account = async (): Promise<FetchAccountResponse> => {
 			};
 		}
 	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			const { data, status } = error.response;
-			console.error('Error response:', data, 'Status Code:', status); // Log status
-			return {
-				success: false,
-				message:
-					data.message || 'An error occurred while fetching account details.',
-				data: null,
-			};
-		} else {
-			console.error('Unexpected error:', error);
-			return {
-				success: false,
-				message: 'An unexpected error occurred',
-				data: null,
-			};
-		}
+		console.error('Unexpected error:', error);
+		return {
+			success: false,
+			message: 'An unexpected error occurred',
+			data: null,
+		};
 	}
 };
 
@@ -199,23 +152,12 @@ export const getChildrenFolders = async (
 			};
 		}
 	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			const { data, status } = error.response;
-			console.error('Error response:', data, 'Status Code:', status); // Log status
-			return {
-				success: false,
-				message:
-					data.message || 'An error occurred while fetching children folders.',
-				data: null,
-			};
-		} else {
-			console.error('Unexpected error:', error);
-			return {
-				success: false,
-				message: 'An unexpected error occurred',
-				data: null,
-			};
-		}
+		console.error('Unexpected error:', error);
+		return {
+			success: false,
+			message: 'An unexpected error occurred',
+			data: null,
+		};
 	}
 };
 
@@ -683,17 +625,13 @@ export const createFolder = async (
 			data: response.data.data,
 		};
 	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			return {
-				success: false,
-				message: error.response.data.message || 'Failed to create the folder.',
-			};
-		} else {
-			return {
-				success: false,
-				message: 'An unexpected error occurred while creating the folder.',
-			};
-		}
+		return {
+			success: false,
+			message:
+				axios.isAxiosError(error) && error.response
+					? error.response.data.message || 'Failed to create the folder.'
+					: 'Failed to create the folder.',
+		};
 	}
 };
 
@@ -727,22 +665,10 @@ export const getUserInfo = async (
 			};
 		}
 	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			const { data, status } = error.response;
-			console.error('Error response:', data, 'Status Code:', status); // Log status
-			return {
-				success: false,
-				message:
-					data.message || 'An error occurred while fetching user details.',
-				data: null,
-			};
-		} else {
-			console.error('Unexpected error:', error);
-			return {
-				success: false,
-				message: 'An unexpected error occurred',
-				data: null,
-			};
-		}
+		return {
+			success: false,
+			message: 'An error occurred while fetching user details.',
+			data: null,
+		};
 	}
 };

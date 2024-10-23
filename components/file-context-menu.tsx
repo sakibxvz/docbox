@@ -5,7 +5,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
-	DropdownMenuShortcut,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
@@ -22,7 +21,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
 	Download,
 	Pencil,
-	Copy,
 	Share,
 	FolderOpen,
 	Info,
@@ -31,19 +29,73 @@ import {
 	FileText,
 	Edit2,
 	FolderCog,
+	Hash,
+	Calendar,
+	Lock,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useDeleteDocument, useDeleteFolder } from '@/services/Mutation';
+import { useFolderInfo, useDocumentInfo } from '@/services/Query';
+import { useToast } from '@/hooks/use-toast';
 
 interface FileContextMenuProps {
 	side: 'top' | 'right' | 'bottom' | 'left';
+	type: 'folder' | 'file';
+	id: number;
 }
 
-export default function FileContextMenu({ side }: FileContextMenuProps) {
+export default function FileContextMenu({
+	side,
+	type,
+	id,
+}: FileContextMenuProps) {
+	const { toast } = useToast();
+
 	const [isFileInfoOpen, setIsFileInfoOpen] = useState(false);
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
+	// Mutation for deletion (conditionally uses folder or document mutation)
+	const deleteMutation =
+		type === 'folder' ? useDeleteFolder() : useDeleteDocument();
+
+	// Fetch folder or file details based on the type
+	const folderDetails = useFolderInfo(type === 'folder' ? id : null);
+	const documentDetails = useDocumentInfo(type === 'file' ? id : null);
+	const details = type === 'folder' ? folderDetails.data : documentDetails.data;
+
+	// Toggle file info dialog
 	const handleFileInfoToggle = () => {
 		setIsFileInfoOpen((prev) => !prev);
+		setIsDropdownOpen(false);
+	};
+
+	// Handle delete action
+	const handleDelete = () => {
+		// Trigger the delete mutation without confirmation
+		deleteMutation.mutate(id, {
+			onSuccess: () => {
+				// Show success toast
+				toast({
+					title: `${type === 'folder' ? 'Folder' : 'File'} Deleted`,
+					description: `${
+						type === 'folder' ? 'Folder' : 'File'
+					} deleted successfully!`,
+					variant: 'destructive', // Optional: depends on your toast library
+				});
+			},
+			onError: (error) => {
+				console.error('Error deleting:', error);
+				// Show error toast
+				toast({
+					title: `Failed to Delete ${type === 'folder' ? 'Folder' : 'File'}`,
+					description: `Error: ${error.message || 'Something went wrong.'}`,
+					variant: 'destructive', // Optional: Use 'destructive' for error toasts
+				});
+			},
+		});
+
+		// Close dropdown after deletion is initiated
 		setIsDropdownOpen(false);
 	};
 
@@ -74,23 +126,17 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 				<DropdownMenuContent className='w-56' side={side}>
 					<DropdownMenuItem>
 						<FolderOpen className='mr-2 h-4 w-4' />
-						<span>Open </span>
+						<Link
+							href={type === 'folder' ? `/folder/${id}` : `/document/${id}`}
+						>
+							<span>Open</span>
+						</Link>
 					</DropdownMenuItem>
-
-					<DropdownMenuItem>
-						<FolderCog className='mr-2 h-4 w-4' />
-						<span>Action </span>
-					</DropdownMenuItem>
-
 					<DropdownMenuItem>
 						<Download className='mr-2 h-4 w-4' />
 						<span>Download</span>
 					</DropdownMenuItem>
 
-					<DropdownMenuItem>
-						<Pencil className='mr-2 h-4 w-4' />
-						<span>Edit</span>
-					</DropdownMenuItem>
 
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>
@@ -116,14 +162,14 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 
 					<DropdownMenuItem onSelect={handleFileInfoToggle}>
 						<Info className='mr-2 h-4 w-4' />
-						<span>File information</span>
+						<span>{type === 'folder' ? 'Folder' : 'File'} Information</span>
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />
 
-					<DropdownMenuItem>
+					<DropdownMenuItem onSelect={handleDelete}>
 						<Trash className='mr-2 h-4 w-4' />
-						<span>Delete</span>
+						<span>Delete {type === 'folder' ? 'Folder' : 'File'}</span>
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -132,7 +178,9 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 				<DialogContent className='sm:max-w-[400px] h-[400px] flex flex-col justify-start'>
 					{/* Dialog Header */}
 					<DialogHeader>
-						<DialogTitle>Document Preview</DialogTitle>
+						<DialogTitle>
+							{type === 'folder' ? 'Folder' : 'Document'} Preview
+						</DialogTitle>
 					</DialogHeader>
 
 					{/* Tabs */}
@@ -157,11 +205,27 @@ export default function FileContextMenu({ side }: FileContextMenuProps) {
 									<div className='space-y-4'>
 										<div className='flex items-center space-x-2'>
 											<FileText className='h-4 w-4 text-muted-foreground' />
-											<span className='text-sm font-medium'>accounts.txt</span>
+											<span className='text-sm font-medium'>
+												{details?.name}
+											</span>
 										</div>
 										<div className='flex items-center space-x-2'>
-											<Edit2 className='h-4 w-4 text-muted-foreground' />
-											<span className='text-sm'>Modified 2026/02/15</span>
+											<Hash className='h-4 w-4 text-muted-foreground' />
+											<span className='text-sm font-medium'>
+												ID: {details?.id}
+											</span>
+										</div>
+										<div className='flex items-center space-x-2'>
+											<Calendar className='h-4 w-4 text-muted-foreground' />
+											<span className='text-sm font-medium'>
+												Date: {details?.date}
+											</span>
+										</div>
+										<div className='flex items-center space-x-2'>
+											<Lock className='h-4 w-4 text-muted-foreground' />
+											<span className='text-sm font-medium'>
+												{details?.islocked ? 'Locked' : 'Unlocked'}
+											</span>
 										</div>
 									</div>
 								</TabsContent>
