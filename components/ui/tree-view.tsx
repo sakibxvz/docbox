@@ -338,9 +338,13 @@ const TreeIcon = ({ item, isSelected, isOpen, default: Default }: any) => {
 			<IconComponent className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5' />
 		);
 	} else if (Default) {
-		return <Default className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5' />;
+		return (
+			<Default className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5' />
+		);
 	} else {
-		return <Folder className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5 '  />;
+		return (
+			<Folder className='w-4 h-4 text-[#3B82F6] dark:text-white mr-1.5 ' />
+		);
 	}
 };
 

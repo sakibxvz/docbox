@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Folder, FileText } from 'lucide-react';
 import {
@@ -14,13 +15,22 @@ import { Spinner } from '@/components/ui/spinner';
 import FileUploader from '@/components/file-uploader';
 import FileContextMenu from '@/components/file-context-menu';
 import { useToast } from '@/hooks/use-toast';
-import { useFolderInfo, useFolderPath } from '@/services/Query'; // Use Tanstack Query hooks
+import { useFolderInfo, useFolderPath } from '@/services/Query';
 import { useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query'; // Import useQueryClient
+
+// Define TypeScript types for the folder and file objects
+type FolderItem = {
+	id: number;
+	name: string;
+	type: 'folder' | 'document';
+};
 
 export default function FolderPage() {
 	const { toast } = useToast();
 	const params = useParams();
-	const { id } = params;
+	const { id } = params as { id: string }; // Ensure type safety
+	const queryClient = useQueryClient(); // Initialize query client
 
 	// Fetch folder information and children using Tanstack Query
 	const {
@@ -37,18 +47,28 @@ export default function FolderPage() {
 	} = useFolderPath(Number(id));
 
 	const handleMoveComplete = () => {
-		console.log('Move completed successfully');
+		toast({ title: 'Move completed successfully' });
 	};
 
-	if (isFolderLoading || isPathLoading)
-		return <Spinner className='items-center justify-between' />;
-	if (folderError || pathError)
-		return <p>Failed to load folder information.</p>;
+	// Function to invalidate the folder query after upload
+	const handleUploadComplete = () => {
+		queryClient.invalidateQueries(['folder-info', Number(id)]);
+	};
 
-	const folders =
-		folderData?.data?.filter((item) => item.type === 'folder') || [];
-	const files =
-		folderData?.data?.filter((item) => item.type === 'document') || [];
+	if (isFolderLoading || isPathLoading) {
+		return <Spinner className='flex items-center justify-center' />;
+	}
+	if (folderError || pathError) {
+		return <p className='text-red-500'>Failed to load folder information.</p>;
+	}
+
+	// Separate folders and files from the fetched folder data
+	const folders: FolderItem[] =
+		folderData?.data?.filter((item: FolderItem) => item.type === 'folder') ||
+		[];
+	const files: FolderItem[] =
+		folderData?.data?.filter((item: FolderItem) => item.type === 'document') ||
+		[];
 	const breadcrumbPathData = pathData?.data || [];
 
 	return (
@@ -59,24 +79,21 @@ export default function FolderPage() {
 						<BreadcrumbLink href='/'>Home</BreadcrumbLink>
 					</BreadcrumbItem>
 
-					{breadcrumbPathData.map((folder, index) => {
-						const isLast = index === breadcrumbPathData.length - 1;
-						return (
-							<React.Fragment key={folder.id}>
-								<BreadcrumbSeparator />
-								<BreadcrumbItem>
-									<BreadcrumbLink
-										href={`/folder/${folder.id}`}
-										className='flex items-center justify-center'
-									>
-										<span className='flex font-normal text-foreground'>
-											{folder.name}
-										</span>
-									</BreadcrumbLink>
-								</BreadcrumbItem>
-							</React.Fragment>
-						);
-					})}
+					{breadcrumbPathData.map((folder) => (
+						<React.Fragment key={folder.id}>
+							<BreadcrumbSeparator />
+							<BreadcrumbItem>
+								<BreadcrumbLink
+									href={`/folder/${folder.id}`}
+									className='flex items-center'
+								>
+									<span className='flex font-normal text-foreground'>
+										{folder.name}
+									</span>
+								</BreadcrumbLink>
+							</BreadcrumbItem>
+						</React.Fragment>
+					))}
 				</BreadcrumbList>
 			</Breadcrumb>
 
@@ -122,7 +139,7 @@ export default function FolderPage() {
 							<h2 className='text-lg font-semibold mb-4'>Files</h2>
 							<div className='grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
 								{files.map((file) => (
-									<Card key={file.name}>
+									<Card key={file.id}>
 										<CardHeader className='flex flex-row items-center justify-between space-y-0'>
 											<CardTitle className='text-sm font-medium truncate'>
 												<FileText className='w-5 h-5 inline-block mr-2' />
@@ -147,7 +164,11 @@ export default function FolderPage() {
 			</div>
 
 			<div>
-				<FileUploader folderId={Number(id)} />
+				{/* Pass the upload complete handler to FileUploader */}
+				<FileUploader
+					folderId={Number(id)}
+					onUploadComplete={handleUploadComplete}
+				/>
 			</div>
 		</div>
 	);

@@ -15,8 +15,9 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Plus, Folder, FileUp } from 'lucide-react';
-import { createFolder } from '@/services/api';
 import { useParams } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createFolder } from '@/services/api';
 
 interface UploadButtonProps {
 	buttonClassName?: string;
@@ -37,13 +38,28 @@ export default function UploadButton({
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [folderName, setFolderName] = useState('Untitled folder');
 	const [folderComment, setFolderComment] = useState('');
-	const [folderSequence, setFolderSequence] = useState<number | undefined>(
-		undefined
-	);
+	const [folderSequence, setFolderSequence] = useState<number | undefined>(undefined);
 	const [folderMessage, setFolderMessage] = useState<string | null>(null);
 
 	const params = useParams();
 	const parentFolderId = Number(params.id) || 1; // Set the parent folder ID accordingly
+
+	const queryClient = useQueryClient();
+
+	// useMutation for folder creation
+	const createFolderMutation = useMutation({
+		mutationFn: ({ folderName, folderComment, folderSequence }: { folderName: string; folderComment: string; folderSequence?: number }) => 
+			createFolder(parentFolderId, folderName, folderComment, folderSequence),
+		onSuccess: () => {
+			// Invalidate the query that fetches folder data
+			queryClient.invalidateQueries(['folder-children', parentFolderId]); // Ensure this matches your query keys
+			setFolderMessage('Folder created successfully!');
+			closeDialog(); // Close the dialog after creating the folder
+		},
+		onError: (error: any) => {
+			setFolderMessage(error.message || 'Failed to create folder.');
+		},
+	});
 
 	const closeDialog = () => {
 		setIsDialogOpen(false);
@@ -54,20 +70,12 @@ export default function UploadButton({
 		setTimeout(() => setIsDropdownOpen(false), 100);
 	};
 
-	const handleCreateFolder = async () => {
-		const response = await createFolder(
-			parentFolderId,
+	const handleCreateFolder = () => {
+		createFolderMutation.mutate({
 			folderName,
 			folderComment,
-			folderSequence
-		);
-		if (response.success) {
-			setFolderMessage('Folder created successfully!');
-            closeDialog(); // Close the dialog after creating the folder
-            
-		} else {
-			setFolderMessage(response.message);
-		}
+			folderSequence,
+		});
 	};
 
 	return (
@@ -131,7 +139,9 @@ export default function UploadButton({
 						<Button variant='outline' onClick={closeDialog}>
 							Cancel
 						</Button>
-						<Button onClick={handleCreateFolder}>Create</Button>
+						<Button onClick={handleCreateFolder} disabled={createFolderMutation.isLoading}>
+							{createFolderMutation.isLoading ? 'Creating...' : 'Create'}
+						</Button>
 					</DialogFooter>
 					{folderMessage && <p>{folderMessage}</p>}{' '}
 					{/* Display folder creation message */}

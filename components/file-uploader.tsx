@@ -1,87 +1,100 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress'; // Import the Progress component
-import { UploadIcon } from 'lucide-react';
-import { uploadDocument } from '@/services/api'; // Adjust the import path as necessary
+import { Progress } from '@/components/ui/progress';
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
+import {
+	X,
+	ChevronUp,
+	ChevronDown,
+	FileIcon,
+	CheckCircle,
+	UploadIcon,
+} from 'lucide-react';
+import { uploadDocument } from '@/services/api';
+import { useTheme } from 'next-themes';
 
 interface FileUploaderProps {
-	folderId: number; // Pass the folder ID where the document will be uploaded
+	folderId: number;
+	onUploadComplete: () => void; // Add the callback prop
 }
 
-export default function FileUploader({ folderId }: FileUploaderProps) {
+export default function FileUploader({
+	folderId,
+	onUploadComplete,
+}: FileUploaderProps) {
 	const [files, setFiles] = useState<File[]>([]);
-	const [uploadMessage, setUploadMessage] = useState<string | null>(null);
-	const [uploadedData, setUploadedData] = useState<
-		{ id: number; name: string }[] | null
-	>(null);
-	const [uploadProgress, setUploadProgress] = useState<number[]>([]); // Track progress for multiple files
+	const [uploadProgress, setUploadProgress] = useState<number[]>([]);
+	const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+	const [isMinimized, setIsMinimized] = useState(true);
+	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+	const [showUploadProgress, setShowUploadProgress] = useState(false);
+	const [bulkProgress, setBulkProgress] = useState(0);
+	const [isHovering, setIsHovering] = useState(false);
+	const { theme } = useTheme();
 
 	const onDrop = useCallback((acceptedFiles: File[]) => {
 		setFiles(acceptedFiles);
-		setUploadProgress(acceptedFiles.map(() => 0)); // Reset progress for all files
+		setShowConfirmDialog(true);
 	}, []);
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
-		multiple: true, // Allow multiple file uploads
+		multiple: true,
 	});
 
-	// Handle upload of all files
 	const handleUpload = async () => {
-		if (files.length === 0) {
-			setUploadMessage('Please select files to upload.');
-			return;
-		}
+		setShowConfirmDialog(false);
+		setShowUploadProgress(true);
+		setUploadProgress(files.map(() => 0));
+		setIsMinimized(true);
 
-		setUploadMessage(null); // Reset message
-		const uploadedResults: { id: number; name: string }[] = [];
-
-		// Iterate through all files and upload them one by one
 		for (let i = 0; i < files.length; i++) {
 			const file = files[i];
-			const customFileName = `${file.name.split('.')[0]}.${file.name
-				.split('.')
-				.pop()}`; // Example of custom filename
-
 			try {
 				const result = await uploadDocument(
 					folderId,
-					file, // Pass file directly
-					{
-						docname: customFileName, // Pass the custom file name
-						origfilename: file.name, // Include original filename
-					},
-					(progressEvent) => {
+					file,
+					{ docname: file.name, origfilename: file.name },
+					(progressEvent: ProgressEvent) => {
 						const percentCompleted = Math.round(
 							(progressEvent.loaded * 100) / progressEvent.total
 						);
 						setUploadProgress((prevProgress) => {
 							const newProgress = [...prevProgress];
-							newProgress[i] = percentCompleted; // Update the progress for the specific file
+							newProgress[i] = percentCompleted;
+							// Calculate total progress after updating
+							const totalProgress =
+								newProgress.reduce((a, b) => a + b, 0) / files.length;
+							setBulkProgress(totalProgress);
 							return newProgress;
 						});
 					}
 				);
-
 				if (result.success) {
-					uploadedResults.push(result.data); // Store uploaded data for each file
+					setUploadedFiles((prevFiles) => [...prevFiles, file.name]);
 				}
-				setUploadMessage(result.message);
 			} catch (error) {
-				setUploadMessage('Error occurred during upload.');
-				console.error(error);
+				console.error('Upload failed:', error);
 			}
 		}
-
-		// Store the uploaded document data once all uploads are done
-		setUploadedData(uploadedResults);
+		// Trigger onUploadComplete after all files are uploaded
+		onUploadComplete();
 	};
 
+	const handleMouseEnter = () => setIsHovering(true);
+	const handleMouseLeave = () => setIsHovering(false);
+
 	return (
-		<div className='w-full max-w-md mx-auto'>
+		<>
 			<div
 				{...getRootProps()}
 				className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
@@ -99,52 +112,96 @@ export default function FileUploader({ folderId }: FileUploaderProps) {
 				</p>
 			</div>
 
-			{/* Show selected files */}
-			{files.length > 0 && (
-				<div className='mt-4'>
-					<h3 className='font-semibold mb-2'>Selected Files:</h3>
+			<Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Confirm Upload</DialogTitle>
+					</DialogHeader>
+					<p>Are you sure you want to upload these files?</p>
 					<ul className='list-disc pl-5'>
-						{files.map((file, index) => (
-							<li key={file.name} className='text-sm'>
-								{file.name} ({(file.size / 1024).toFixed(2)} KB)
-								{/* Progress Bar for each file */}
-								{uploadProgress[index] > 0 && (
-									<div className='mt-2'>
-										<Progress value={uploadProgress[index]} />
-										<p className='text-sm mt-1'>
-											{uploadProgress[index]}% uploaded
-										</p>
-									</div>
+						{files.map((file) => (
+							<li key={file.name}>{file.name}</li>
+						))}
+					</ul>
+					<DialogFooter>
+						<Button
+							variant='outline'
+							onClick={() => setShowConfirmDialog(false)}
+						>
+							Cancel
+						</Button>
+						<Button onClick={handleUpload}>Upload</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{showUploadProgress && (
+				<div
+					className={`fixed bottom-4 right-4 w-64 rounded-lg shadow-lg overflow-hidden ${
+						theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
+					}`}
+					onMouseEnter={handleMouseEnter}
+					onMouseLeave={handleMouseLeave}
+				>
+					<div
+						className={`flex justify-between items-center p-2 ${
+							theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
+						}`}
+					>
+						<span className='font-semibold'>
+							{isMinimized
+								? `Uploading ${files.length} Files`
+								: `${uploadedFiles.length} uploads complete`}
+						</span>
+						<div>
+							<Button
+								variant='ghost'
+								size='icon'
+								onClick={() => setIsMinimized(!isMinimized)}
+							>
+								{isMinimized ? (
+									<ChevronUp size={16} />
+								) : (
+									<ChevronDown size={16} />
 								)}
-							</li>
-						))}
-					</ul>
-
-					<Button className='mt-4' onClick={handleUpload}>
-						Upload Files
-					</Button>
-					<Button className='mt-4' onClick={() => setFiles([])}>
-						Clear Files
-					</Button>
+							</Button>
+							<Button
+								variant='ghost'
+								size='icon'
+								onClick={() => {
+									setFiles([]);
+									setUploadProgress([]);
+									setUploadedFiles([]);
+									setShowUploadProgress(false);
+								}}
+							>
+								<X size={16} />
+							</Button>
+						</div>
+					</div>
+					{isMinimized ? (
+						<div className='p-2'>
+							<Progress value={bulkProgress} className='w-full' />
+						</div>
+					) : (
+						<div className='p-2'>
+							{files.map((file, index) => (
+								<div key={file.name} className='flex items-center mb-1'>
+									<FileIcon size={16} className='mr-2' />
+									<span className='text-sm flex-grow truncate'>
+										{file.name}
+									</span>
+									{uploadedFiles.includes(file.name) ? (
+										<CheckCircle size={16} className='text-green-500' />
+									) : (
+										<Progress value={uploadProgress[index]} className='w-12' />
+									)}
+								</div>
+							))}
+						</div>
+					)}
 				</div>
 			)}
-
-			{/* Upload message */}
-			{uploadMessage && <p className='mt-2 text-sm'>{uploadMessage}</p>}
-
-			{/* Uploaded files info */}
-			{uploadedData && (
-				<div className='mt-2'>
-					<h3>Uploaded Documents:</h3>
-					<ul>
-						{uploadedData.map((data) => (
-							<li key={data.id}>
-								Document ID: {data.id}, Name: {data.name}
-							</li>
-						))}
-					</ul>
-				</div>
-			)}
-		</div>
+		</>
 	);
 }

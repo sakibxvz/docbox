@@ -153,19 +153,25 @@ export const useMoveFolder = () => {
 	});
 };
 
-
 // POST: Upload a document
-export const useUploadDocument = () => {
+export const useUploadDocument = (
+	onUploadProgress: (progressEvent: AxiosProgressEvent) => void
+) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: ({
 			parentFolderId,
 			file,
+			metadata,
 		}: {
 			parentFolderId: number;
 			file: File;
-		}) => uploadDocument(parentFolderId, file),
+			metadata?: {
+				docname?: string;
+				origfilename?: string;
+			};
+		}) => uploadDocument(parentFolderId, file, metadata, onUploadProgress),
 		onSuccess: () => {
 			// Invalidate document and folder-related queries to refetch data after upload
 			queryClient.invalidateQueries({ queryKey: ['documents'] });

@@ -530,7 +530,7 @@ export const uploadDocument = async (
 		owner?: number; // ID of the owner if admin
 		attributes?: { [key: string]: string };
 	} = {},
-	onUploadProgress?: (progressEvent: AxiosProgressEvent) => void // AxiosProgressEvent type
+	onUploadProgress?: (progressEvent: AxiosProgressEvent) => void // Use AxiosProgressEvent here
 ): Promise<{
 	success: boolean;
 	message: string;
